@@ -1,0 +1,16 @@
+# Composer
+/vendor/
+
+# Drupal core and contributed code
+/web/core/
+/web/modules/contrib/
+/web/themes/contrib/
+
+# User-generated files
+/web/sites/*/files/
+
+# Local settings
+/web/sites/*/settings.local.php
+
+# IDE
+.idea/
