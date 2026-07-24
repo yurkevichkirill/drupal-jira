@@ -177,3 +177,43 @@ git commit --no-verify
 ```
 
 > **Warning:** Bypassing the hook skips all code quality checks. This option should only be used in justified cases (for example, during emergency debugging or when the hook itself is malfunctioning). Code should still pass PHPCS and PHPStan before being merged into the main branch.
+
+## Configuration Management
+
+The project uses Drupal Core Configuration Synchronization to manage site configuration. All configuration is stored in the `config/sync` directory and committed to the repository. Manual configuration changes on shared environments are not allowed.
+
+### Export configuration
+
+After making configuration changes through the Drupal administrative interface (for example, creating content types, fields, Views, or changing site settings), export the active configuration:
+
+```bash
+ddev drush cex -y
+```
+
+Review the generated changes in the `config/sync` directory, then commit them together with the related code changes.
+
+### Import configuration
+
+After pulling configuration changes from the repository, import them into your local environment:
+
+```bash
+ddev drush cim -y
+```
+
+This updates the active configuration to match the configuration stored in the repository.
+
+### Verify synchronization
+
+To verify that the active configuration matches the exported configuration, visit:
+
+```
+/admin/config/development/configuration
+```
+
+or run:
+
+```bash
+ddev drush config:status
+```
+
+No differences should be reported after a successful configuration import.

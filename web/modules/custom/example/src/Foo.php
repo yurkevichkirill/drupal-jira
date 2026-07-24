@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-class Foo
-{
+namespace Drupal\example;
 
+/**
+ * Example class.
+ */
+class Foo {
 }
