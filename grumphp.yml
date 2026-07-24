@@ -1,0 +1,26 @@
+grumphp:
+  hooks_preset: local
+
+  git_hook_variables:
+    EXEC_GRUMPHP_COMMAND: ddev exec php
+
+  ignore_unstaged_changes: false
+  hide_circumvention_tip: false
+
+  tasks:
+    phpcs:
+      standard: phpcs.xml.dist
+      triggered_by:
+        - php
+        - module
+        - inc
+        - install
+        - profile
+        - theme
+
+    phpstan:
+      configuration: phpstan.neon.dist
+      memory_limit: 256M
+      use_grumphp_paths: true
+      triggered_by:
+        - php

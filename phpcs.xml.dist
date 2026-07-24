@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="DrupalJira">
+  <description>Drupal coding standards for custom project code.</description>
+
+  <!-- Use Drupal core standards -->
+  <rule ref="Drupal"/>
+  <rule ref="DrupalPractice"/>
+
+  <!-- Only scan custom modules/themes -->
+  <file>web/modules/custom</file>
+  <file>web/themes/custom</file>
+
+  <!-- Ignore irrelevant directories -->
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+
+  <!-- File extensions and output options -->
+  <arg name="extensions" value="php,module,inc,install,profile,theme"/>
+  <arg value="sp"/>  <!-- show sniff names -->
+</ruleset>
