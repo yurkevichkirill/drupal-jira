@@ -133,3 +133,47 @@ ddev drush cr
 ```
 
 Execution should stop at the configured breakpoint.
+
+## Code Quality
+
+The project uses the following tools to ensure code quality:
+
+- **PHP CodeSniffer (PHPCS)** with the `Drupal` and `DrupalPractice` coding standards.
+- **PHPStan** with the Drupal extension for static analysis.
+- **GrumPHP** to run checks automatically before every commit.
+
+### Run checks manually
+
+Run PHP CodeSniffer:
+
+```bash
+ddev exec vendor/bin/phpcs
+```
+
+Run PHPStan:
+
+```bash
+ddev exec vendor/bin/phpstan analyse
+```
+
+Run all GrumPHP tasks:
+
+```bash
+ddev exec vendor/bin/grumphp run
+```
+
+### Git pre-commit hook
+
+GrumPHP automatically runs before every `git commit`.
+
+If any configured check fails, the commit will be rejected until the issues are fixed.
+
+### Bypass the pre-commit hook
+
+In exceptional situations, the pre-commit hook can be skipped:
+
+```bash
+git commit --no-verify
+```
+
+> **Warning:** Bypassing the hook skips all code quality checks. This option should only be used in justified cases (for example, during emergency debugging or when the hook itself is malfunctioning). Code should still pass PHPCS and PHPStan before being merged into the main branch.
