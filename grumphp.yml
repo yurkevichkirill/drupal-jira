@@ -21,6 +21,6 @@ grumphp:
     phpstan:
       configuration: phpstan.neon.dist
       memory_limit: 256M
-      use_grumphp_paths: true
+      use_grumphp_paths: false
       triggered_by:
         - php

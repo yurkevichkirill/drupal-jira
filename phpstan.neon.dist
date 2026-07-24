@@ -1,5 +1,11 @@
 parameters:
     level: 1
+
     paths:
         - web/modules/custom
         - web/themes/custom
+
+    excludePaths:
+        - web/core/*
+        - web/modules/contrib/*
+        - web/themes/contrib/*
