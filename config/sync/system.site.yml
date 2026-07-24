@@ -2,7 +2,7 @@ _core:
   default_config_hash: HlN7eAN2N4JIHsYv56V4E7sqC9bS609KwvGFjyD_mgk
 langcode: en
 uuid: 537b347d-cee2-40ca-896b-882a7271d4fc
-name: 'Drupal Jira'
+name: MyFirstDrupalProject
 mail: admin@example.com
 slogan: ''
 page:
