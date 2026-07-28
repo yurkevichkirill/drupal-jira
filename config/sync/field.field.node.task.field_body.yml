@@ -1,0 +1,22 @@
+uuid: 55118844-52ff-45fd-b7cf-cfe97fd640a0
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_body
+    - node.type.task
+  module:
+    - text
+id: node.task.field_body
+field_name: field_body
+entity_type: node
+bundle: task
+label: Body
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats: {  }
+field_type: text_long

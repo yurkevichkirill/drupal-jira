@@ -1,0 +1,23 @@
+uuid: f3f2f487-1ad6-4360-b11d-f5f813a6f313
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_status
+    - node.type.task
+  module:
+    - options
+id: node.task.field_status
+field_name: field_status
+entity_type: node
+bundle: task
+label: Status
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    value: backlog
+default_value_callback: ''
+settings: {  }
+field_type: list_string
