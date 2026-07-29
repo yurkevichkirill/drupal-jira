@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @file
+ * Theme hooks and preprocess functions for the DrupalJira theme.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Component\Utility\Html;
+use Drupal\paragraphs\ParagraphInterface;
+
+/**
+ * Implements hook_preprocess_HOOK() for paragraph templates.
+ *
+ * Adds variables that are computed from paragraph data and are therefore never
+ * entered by an editor as plain text.
+ */
+function drupal_jira_preprocess_paragraph(array &$variables): void {
+  $paragraph = $variables['paragraph'];
+  if (!$paragraph instanceof ParagraphInterface) {
+    return;
+  }
+
+  $bundle = $paragraph->bundle();
+  $variables['paragraph_bundle_class'] = 'paragraph--jira-' . Html::getClass($bundle);
+
+  switch ($bundle) {
+    case 'code':
+      $language = _drupal_jira_paragraph_value($paragraph, 'field_language') ?: 'plain';
+      $variables['code_language'] = $language;
+      $variables['code_language_class'] = 'paragraph-code--lang-' . Html::getClass($language);
+      $code = _drupal_jira_paragraph_value($paragraph, 'field_code');
+      $variables['code_line_count'] = $code === '' ? 0 : substr_count($code, "\n") + 1;
+      break;
+
+    case 'callout':
+      $type = _drupal_jira_paragraph_value($paragraph, 'field_callout_type') ?: 'info';
+      $variables['callout_type'] = $type;
+      $variables['callout_class'] = 'paragraph-callout--' . Html::getClass($type);
+      break;
+
+    case 'text':
+      $body = strip_tags(_drupal_jira_paragraph_value($paragraph, 'field_body'));
+      $words = preg_match_all('/[\p{L}\p{N}]+/u', $body);
+      $variables['text_word_count'] = $words;
+      $variables['text_reading_time'] = (int) max(1, ceil($words / 200));
+      break;
+
+    case 'image':
+      $variables['image_has_media'] = $paragraph->hasField('field_image')
+        && !$paragraph->get('field_image')->isEmpty();
+      break;
+  }
+}
+
+/**
+ * Returns the main value of a paragraph field as a string.
+ *
+ * @param \Drupal\paragraphs\ParagraphInterface $paragraph
+ *   The paragraph the value is read from.
+ * @param string $field_name
+ *   The machine name of the field.
+ *
+ * @return string
+ *   The field value, or an empty string when the field is missing or empty.
+ */
+function _drupal_jira_paragraph_value(ParagraphInterface $paragraph, string $field_name): string {
+  if (!$paragraph->hasField($field_name) || $paragraph->get($field_name)->isEmpty()) {
+    return '';
+  }
+  $value = $paragraph->get($field_name)->first()->getValue();
+  return isset($value['value']) ? (string) $value['value'] : '';
+}

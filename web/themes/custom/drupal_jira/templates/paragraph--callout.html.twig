@@ -1,0 +1,15 @@
+{#
+/**
+ * @file
+ * Theme override for the "callout" paragraph type.
+ *
+ * Available variables (in addition to the defaults):
+ * - paragraph_bundle_class: computed in drupal_jira_preprocess_paragraph().
+ * - callout_type: machine value of field_callout_type.
+ * - callout_class: CSS class derived from field_callout_type.
+ */
+#}
+<aside{{ attributes.addClass('paragraph', 'paragraph-callout', paragraph_bundle_class, callout_class) }} role="note" data-callout="{{ callout_type }}">
+  <span class="paragraph-callout__badge">{{ callout_type }}</span>
+  <div class="paragraph-callout__text">{{ content.field_callout_text }}</div>
+</aside>

@@ -1,0 +1,5 @@
+name: 'DrupalJira'
+type: theme
+base theme: false
+description: 'Custom theme for DrupalJira: paragraph templates and preprocess.'
+core_version_requirement: ^11

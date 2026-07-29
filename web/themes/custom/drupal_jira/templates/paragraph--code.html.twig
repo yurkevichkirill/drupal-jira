@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * Theme override for the "code" paragraph type.
+ *
+ * Available variables (in addition to the defaults):
+ * - paragraph_bundle_class: computed in drupal_jira_preprocess_paragraph().
+ * - code_language: machine value of field_language, or "plain" when empty.
+ * - code_language_class: CSS class derived from field_language.
+ * - code_line_count: number of lines in field_code.
+ */
+#}
+<figure{{ attributes.addClass('paragraph', 'paragraph-code', paragraph_bundle_class, code_language_class) }}>
+  <figcaption class="paragraph-code__meta">
+    <span class="paragraph-code__language">{{ code_language }}</span>
+    <span class="paragraph-code__lines">{{ code_line_count }}</span>
+  </figcaption>
+  <pre class="paragraph-code__pre"><code class="language-{{ code_language }}">{{ paragraph.field_code.value }}</code></pre>
+</figure>
