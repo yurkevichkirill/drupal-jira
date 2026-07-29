@@ -1,0 +1,20 @@
+uuid: c4d59b11-22d4-4300-85cf-eb5ac6c3c2d4
+langcode: en
+status: true
+dependencies:
+  theme:
+    - drupal_jira
+_core:
+  default_config_hash: Oh72CHUkp6cj6dbrXMK2hzCsM05w9cHVoD22rMLQUfk
+id: drupal_jira_page_title
+theme: drupal_jira
+region: content
+weight: -30
+provider: null
+plugin: page_title_block
+settings:
+  id: page_title_block
+  label: 'Page title'
+  label_display: '0'
+  provider: core
+visibility: {  }

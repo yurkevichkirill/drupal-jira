@@ -1,0 +1,10 @@
+uuid: 82a2595b-e81d-4a53-ba45-95a8558d5fa7
+langcode: en
+status: true
+dependencies: {  }
+id: callout
+label: Callout
+icon_uuid: null
+icon_default: null
+description: ''
+behavior_plugins: {  }

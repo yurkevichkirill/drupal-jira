@@ -1,0 +1,21 @@
+uuid: cb1af986-e258-4fc4-9f10-12e7db1e99db
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_language
+    - paragraphs.paragraphs_type.code
+  module:
+    - options
+id: paragraph.code.field_language
+field_name: field_language
+entity_type: paragraph
+bundle: code
+label: Language
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

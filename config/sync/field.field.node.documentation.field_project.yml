@@ -1,0 +1,29 @@
+uuid: d18faf3f-7457-4c11-a8a7-ff1a9d3422bd
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_project
+    - node.type.documentation
+    - node.type.project
+id: node.documentation.field_project
+field_name: field_project
+entity_type: node
+bundle: documentation
+label: Project
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      project: project
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

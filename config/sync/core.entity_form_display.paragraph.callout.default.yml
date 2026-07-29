@@ -1,0 +1,32 @@
+uuid: 3d58bd83-8ea8-43e6-845f-09513911d1aa
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.paragraph.callout.field_callout_text
+    - field.field.paragraph.callout.field_callout_type
+    - paragraphs.paragraphs_type.callout
+  module:
+    - text
+id: paragraph.callout.default
+targetEntityType: paragraph
+bundle: callout
+mode: default
+content:
+  field_callout_text:
+    type: text_textarea
+    weight: 0
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_callout_type:
+    type: options_select
+    weight: 1
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  created: true
+  status: true

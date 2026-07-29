@@ -1,0 +1,22 @@
+uuid: 390cd59e-8cac-454a-9062-79c4ccaa3153
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.paragraph.field_callout_text
+    - paragraphs.paragraphs_type.callout
+  module:
+    - text
+id: paragraph.callout.field_callout_text
+field_name: field_callout_text
+entity_type: paragraph
+bundle: callout
+label: 'Callout text'
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats: {  }
+field_type: text_long

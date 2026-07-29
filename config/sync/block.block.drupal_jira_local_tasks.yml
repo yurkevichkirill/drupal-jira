@@ -1,0 +1,22 @@
+uuid: 623c3e4f-e0d1-4c2a-84c1-871e0d864b2d
+langcode: en
+status: true
+dependencies:
+  theme:
+    - drupal_jira
+_core:
+  default_config_hash: T0wbI6qVdThbbIqXDZFg_1VZ3_ittXBdEoUH7d7ux_E
+id: drupal_jira_local_tasks
+theme: drupal_jira
+region: content
+weight: -20
+provider: null
+plugin: local_tasks_block
+settings:
+  id: local_tasks_block
+  label: Tabs
+  label_display: '0'
+  provider: core
+  primary: true
+  secondary: true
+visibility: {  }

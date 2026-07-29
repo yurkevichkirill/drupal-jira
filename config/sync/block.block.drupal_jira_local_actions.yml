@@ -1,0 +1,20 @@
+uuid: 852054d2-5215-4302-9d3a-09cd7cd02b6d
+langcode: en
+status: true
+dependencies:
+  theme:
+    - drupal_jira
+_core:
+  default_config_hash: ABoKnlk20KHqZRw_2Qr4EvaFvH4lnQ2nuhunHeE1JIU
+id: drupal_jira_local_actions
+theme: drupal_jira
+region: content
+weight: -10
+provider: null
+plugin: local_actions_block
+settings:
+  id: local_actions_block
+  label: 'Primary admin actions'
+  label_display: '0'
+  provider: core
+visibility: {  }
