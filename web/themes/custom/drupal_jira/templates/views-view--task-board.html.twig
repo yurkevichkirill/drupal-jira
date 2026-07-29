@@ -1,0 +1,63 @@
+{#
+/**
+ * @file
+ * Kanban board layout for the task_board view.
+ *
+ * Renders one column per configured value of field_status instead of the plain
+ * list of grouped result sets, so that every status keeps a drop target even
+ * when it currently holds no tasks.
+ *
+ * Available variables in addition to the ones documented in the core
+ * views-view.html.twig template:
+ * - board_columns: List of columns, each with the keys 'key' (the machine name
+ *   of the status), 'label' and 'rows' (the rendered task teasers).
+ *
+ * @see drupal_jira_preprocess_views_view()
+ * @see template_preprocess_views_view()
+ */
+#}
+{{ attach_library('drupal_jira/task_board') }}
+{%
+  set classes = [
+    'task-board',
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {{ title }}
+  {{ title_suffix }}
+
+  {% if header %}
+    <header>
+      {{ header }}
+    </header>
+  {% endif %}
+
+  {{ exposed }}
+  {{ attachment_before }}
+
+  <div class="task-board__columns">
+    {% for column in board_columns %}
+      <div class="task-board__column" data-status="{{ column.key }}">
+        <h2 class="task-board__column-title">
+          {{ column.label }}
+          <span class="task-board__count">{{ column.rows|length }}</span>
+        </h2>
+        <div class="task-board__cards">
+          {% for row in column.rows %}
+            {{ row }}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {{ attachment_after }}
+
+  {% if footer %}
+    <footer>
+      {{ footer }}
+    </footer>
+  {% endif %}
+</div>

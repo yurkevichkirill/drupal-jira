@@ -1,0 +1,7 @@
+name: 'Task board'
+type: module
+description: 'AJAX endpoint that saves the status a task card was dropped into on the Kanban board.'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - drupal:node

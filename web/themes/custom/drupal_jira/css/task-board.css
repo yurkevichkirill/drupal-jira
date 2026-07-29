@@ -1,0 +1,72 @@
+/**
+ * @file
+ * Kanban board layout: four status columns holding draggable task cards.
+ */
+
+.task-board__columns {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.task-board__column {
+  flex: 1 1 0;
+  min-width: 12rem;
+  padding: 0.75rem;
+  border: 1px solid #d3d8de;
+  border-radius: 6px;
+  background: #f3f4f7;
+}
+
+.task-board__column.is-drop-target {
+  border-color: #4a90d9;
+  background: #e3f0ff;
+}
+
+.task-board__column-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.task-board__count {
+  color: #6b7280;
+  font-weight: normal;
+}
+
+/* The min-height keeps an empty column usable as a drop target. */
+.task-board__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 6rem;
+}
+
+.task-card {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d3d8de;
+  border-radius: 4px;
+  background: #fff;
+  cursor: grab;
+}
+
+.task-card.is-dragging {
+  opacity: 0.4;
+}
+
+.task-card__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.task-card__content {
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+/* The Frontend Editing panel has to sit above the core modal dialog. */
+.frontend-editing-container,
+.frontend-editing-wrapper {
+  z-index: 1261;
+}

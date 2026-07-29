@@ -1,0 +1,12 @@
+task_board.update_status:
+  path: '/task-board/task/{node}/status'
+  defaults:
+    _controller: '\Drupal\task_board\Controller\TaskStatusController::update'
+  methods: [POST]
+  requirements:
+    _entity_access: 'node.update'
+    _csrf_request_header_token: 'TRUE'
+  options:
+    parameters:
+      node:
+        type: 'entity:node'

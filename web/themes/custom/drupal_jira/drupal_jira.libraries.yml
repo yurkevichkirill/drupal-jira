@@ -1,0 +1,12 @@
+task_board:
+  version: 1.x
+  css:
+    theme:
+      css/task-board.css: {}
+  js:
+    js/task-board.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupal.ajax
+    - core/drupal.dialog.ajax

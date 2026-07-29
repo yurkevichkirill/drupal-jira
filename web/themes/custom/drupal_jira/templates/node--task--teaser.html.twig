@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Task card used as a column item on the Kanban board.
+ *
+ * The card is a native HTML5 drag source; the title links into a modal dialog
+ * that shows the same task in the Full view mode, so opening a task never
+ * leaves the board.
+ *
+ * @see js/task-board.js
+ * @see template_preprocess_node()
+ */
+#}
+{{ attach_library('core/drupal.dialog.ajax') }}
+<article{{ attributes.addClass('task-card').setAttribute('draggable', 'true').setAttribute('data-nid', node.id) }}>
+
+  {{ title_prefix }}
+  <h3{{ title_attributes.addClass('task-card__title') }}>
+    <a href="{{ url }}" class="use-ajax task-card__link" data-dialog-type="modal" data-dialog-options='{"width":800}'>{{ label }}</a>
+  </h3>
+  {{ title_suffix }}
+
+  <div{{ content_attributes.addClass('task-card__content') }}>
+    {{ content }}
+  </div>
+
+</article>
