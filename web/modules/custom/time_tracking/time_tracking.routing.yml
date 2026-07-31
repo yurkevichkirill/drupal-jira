@@ -1,0 +1,7 @@
+entity.time_log.settings:
+  path: 'admin/structure/time-log'
+  defaults:
+    _form: '\Drupal\time_tracking\Form\TimeLogSettingsForm'
+    _title: 'Time log'
+  requirements:
+    _permission: 'administer time_log'

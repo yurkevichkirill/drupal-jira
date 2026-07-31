@@ -1,0 +1,3 @@
+administer time_log:
+  title: 'Administer time logs'
+  restrict access: true

@@ -1,0 +1,9 @@
+entity.time_log.settings:
+  title: 'Settings'
+  route_name: entity.time_log.settings
+  base_route: entity.time_log.settings
+entity.time_log.collection:
+  title: 'Time logs'
+  route_name: entity.time_log.collection
+  base_route: system.admin_content
+  weight: 10

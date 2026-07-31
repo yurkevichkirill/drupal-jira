@@ -1,0 +1,9 @@
+name: 'Time tracking'
+type: module
+description: 'Time tracking for DrupalJira rasks.'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:user
+  - datetime:datetime

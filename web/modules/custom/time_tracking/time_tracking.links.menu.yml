@@ -1,0 +1,11 @@
+entity.time_log.settings:
+  title: 'Time log'
+  description: 'Configure a Time log entity type.'
+  route_name:  entity.time_log.settings
+  parent: system.admin_structure
+
+entity.time_log.collection:
+  title: 'Time logs'
+  description: 'List of time logs.'
+  route_name: entity.time_log.collection
+  parent: system.admin_content
