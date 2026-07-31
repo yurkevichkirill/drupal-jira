@@ -17,11 +17,12 @@ final class TimeLogListBuilder extends EntityListBuilder {
    */
   public function buildHeader(): array {
     $header['id'] = $this->t('ID');
-    $header['label'] = $this->t('Label');
-    $header['status'] = $this->t('Status');
+    $header['task'] = $this->t('Task');
     $header['uid'] = $this->t('Author');
-    $header['created'] = $this->t('Created');
-    $header['changed'] = $this->t('Updated');
+    $header['hours'] = $this->t('Hours');
+    $header['log_date'] = $this->t('Log Date');
+    $header['notes'] = $this->t('Notes');
+    $header['over_estimate_reason'] = $this->t('Over estimate reason');
     return $header + parent::buildHeader();
   }
 
@@ -31,15 +32,12 @@ final class TimeLogListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\time_tracking\TimeLogInterface $entity */
     $row['id'] = $entity->id();
-    $row['label'] = $entity->label();
-    $row['status'] = $entity->get('status')->value ? $this->t('Enabled') : $this->t('Disabled');
-    $username_options = [
-      'label' => 'hidden',
-      'settings' => ['link' => $entity->get('uid')->entity->isAuthenticated()],
-    ];
-    $row['uid']['data'] = $entity->get('uid')->view($username_options);
-    $row['created']['data'] = $entity->get('created')->view(['label' => 'hidden']);
-    $row['changed']['data'] = $entity->get('changed')->view(['label' => 'hidden']);
+    $row['task']['data'] = $entity->get('task')->view(['label' => 'hidden']);
+    $row['uid']['data'] = $entity->get('uid')->view(['label' => 'hidden']);
+    $row['hours']['data'] = $entity->get('hours')->view(['label' => 'hidden']);
+    $row['log_date']['data'] = $entity->get('log_date')->view(['label' => 'hidden']);
+    $row['notes']['data'] = $entity->get('notes')->view(['label' => 'hidden']);
+    $row['over_estimate_reason']['data'] = $entity->get('over_estimate_reason')->view(['label' => 'hidden']);
     return $row + parent::buildRow($entity);
   }
 

@@ -3,6 +3,7 @@ _core:
 module:
   block: 0
   contextual: 0
+  datetime: 0
   dblog: 0
   dynamic_page_cache: 0
   entity_reference_revisions: 0
@@ -23,6 +24,7 @@ module:
   system: 0
   task_board: 0
   text: 0
+  time_tracking: 0
   update: 0
   user: 0
   views_ui: 0
@@ -33,4 +35,5 @@ theme:
   stark: 0
   drupal_jira: 0
   claro: 0
+  gin: 0
 profile: minimal

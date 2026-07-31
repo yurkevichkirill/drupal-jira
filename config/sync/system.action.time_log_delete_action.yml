@@ -1,0 +1,13 @@
+uuid: 20534c5c-993a-40e4-ba6e-42b110033501
+langcode: en
+status: true
+dependencies:
+  module:
+    - time_tracking
+_core:
+  default_config_hash: p1DPH8Ftsq0ik2uGq4_iQdIFtEt2Ql2LOvnIyeZVxv4
+id: time_log_delete_action
+label: 'Delete time logs'
+type: time_log
+plugin: 'entity:delete_action:time_log'
+configuration: {  }

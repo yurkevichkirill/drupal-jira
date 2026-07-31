@@ -7,12 +7,11 @@ namespace Drupal\time_tracking\Entity;
 use Drupal\Core\Entity\Attribute\ContentEntityType;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
-use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Form\DeleteMultipleForm;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItem;
 use Drupal\time_tracking\Form\TimeLogForm;
 use Drupal\time_tracking\Routing\TimeLogHtmlRouteProvider;
 use Drupal\time_tracking\TimeLogInterface;
@@ -31,9 +30,8 @@ use Drupal\views\EntityViewsData;
   label_plural: new TranslatableMarkup('time logs'),
   entity_keys: [
     'id' => 'id',
-    'label' => 'label',
+    'label' => 'id',
     'owner' => 'uid',
-    'published' => 'status',
     'uuid' => 'uuid',
   ],
   handlers: [
@@ -59,6 +57,8 @@ use Drupal\views\EntityViewsData;
   ],
   admin_permission: 'administer time_log',
   base_table: 'time_log',
+  translatable: FALSE,
+  show_revision_ui: FALSE,
   label_count: [
     'singular' => '@count time logs',
     'plural' => '@count time logs',
@@ -67,19 +67,7 @@ use Drupal\views\EntityViewsData;
 )]
 class TimeLog extends ContentEntityBase implements TimeLogInterface {
 
-  use EntityChangedTrait;
   use EntityOwnerTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSave(EntityStorageInterface $storage): void {
-    parent::preSave($storage);
-    if (!$this->getOwnerId()) {
-      // If no owner has been set explicitly, make the anonymous user the owner.
-      $this->setOwnerId(0);
-    }
-  }
 
   /**
    * {@inheritdoc}
@@ -88,60 +76,34 @@ class TimeLog extends ContentEntityBase implements TimeLogInterface {
 
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['label'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Label'))
+    $fields['task'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Task'))
+      ->setDescription(t('The task the time was spent on.'))
       ->setRequired(TRUE)
-      ->setSetting('max_length', 255)
+      ->setSetting('target_type', 'node')
+      ->setSetting('handler', 'default:node')
+      ->setSetting('handler_settings', ['target_bundles' => ['task' => 'task']])
       ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -5,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'string',
-        'weight' => -5,
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['status'] = BaseFieldDefinition::create('boolean')
-      ->setLabel(t('Status'))
-      ->setDefaultValue(TRUE)
-      ->setSetting('on_label', 'Enabled')
-      ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
+        'type' => 'entity_reference_autocomplete',
         'settings' => [
-          'display_label' => FALSE,
+          'match_operator' => 'CONTAINS',
+          'size' => 60,
+          'placeholder' => '',
         ],
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
-        'type' => 'boolean',
         'label' => 'above',
+        'type' => 'entity_reference_label',
         'weight' => 0,
-        'settings' => [
-          'format' => 'enabled-disabled',
-        ],
-      ])
-      ->setDisplayConfigurable('view', TRUE);
-
-    $fields['description'] = BaseFieldDefinition::create('text_long')
-      ->setLabel(t('Description'))
-      ->setDisplayOptions('form', [
-        'type' => 'text_textarea',
-        'weight' => 10,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('view', [
-        'type' => 'text_default',
-        'label' => 'above',
-        'weight' => 10,
       ])
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['uid'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Author'))
+      ->setDescription(t('The user who logged the time.'))
+      ->setRequired(TRUE)
       ->setSetting('target_type', 'user')
       ->setDefaultValueCallback(self::class . '::getDefaultEntityOwner')
       ->setDisplayOptions('form', [
@@ -151,34 +113,80 @@ class TimeLog extends ContentEntityBase implements TimeLogInterface {
           'size' => 60,
           'placeholder' => '',
         ],
-        'weight' => 15,
+        'weight' => 5,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'author',
+        'weight' => 5,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['hours'] = BaseFieldDefinition::create('decimal')
+      ->setLabel(t('Hours'))
+      ->setDescription(t('The number of hours spent.'))
+      ->setSetting('precision', 10)
+      ->setSetting('scale', 2)
+      ->setDisplayOptions('form', [
+        'type' => 'number',
+        'weight' => 10,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'number_decimal',
+        'weight' => 10,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['log_date'] = BaseFieldDefinition::create('datetime')
+      ->setLabel(t('Log date'))
+      ->setDescription(t('The day the time was spent on.'))
+      ->setSetting('datetime_type', DateTimeItem::DATETIME_TYPE_DATE)
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_default',
+        'weight' => 15,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'datetime_default',
         'weight' => 15,
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['created'] = BaseFieldDefinition::create('created')
-      ->setLabel(t('Authored on'))
-      ->setDescription(t('The time that the time log was created.'))
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'timestamp',
+    $fields['notes'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Notes'))
+      ->setDescription(t('Free form description of the work done.'))
+      ->setDisplayOptions('form', [
+        'type' => 'string_textarea',
+        'settings' => ['rows' => 4],
         'weight' => 20,
       ])
       ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'basic_string',
         'weight' => 20,
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['changed'] = BaseFieldDefinition::create('changed')
-      ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the time log was last edited.'));
+    $fields['over_estimate_reason'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Over estimate reason'))
+      ->setDescription(t('Why the logged time exceeds the task estimate.'))
+      ->setDisplayOptions('form', [
+        'type' => 'string_textarea',
+        'settings' => ['rows' => 3],
+        'weight' => 25,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'basic_string',
+        'weight' => 25,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     return $fields;
   }
