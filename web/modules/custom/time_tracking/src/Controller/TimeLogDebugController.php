@@ -115,7 +115,7 @@ final class TimeLogDebugController extends ControllerBase {
 
     $rows = [];
     $time_logs = $this->timeLogStorage->loadMultiple($ids);
-    // Walk the query result, not the loaded map: only the query knows the order.
+
     foreach ($ids as $id) {
       $time_log = $time_logs[$id] ?? NULL;
       if (!$time_log instanceof TimeLogInterface) {
