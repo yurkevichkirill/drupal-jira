@@ -217,3 +217,15 @@ ddev drush config:status
 ```
 
 No differences should be reported after a successful configuration import.
+
+## Time log debug routes
+
+Entity API demo pages of the `time_tracking` module. All three require the
+`access administration pages` permission; `{task}` is a node id of a Task node
+and is upcast to the node entity, so an unknown or non-task id returns 404.
+
+| Route                           | Path                                          | Example                                   | What it does                                                             |
+|---------------------------------|-----------------------------------------------|-------------------------------------------|--------------------------------------------------------------------------|
+| `drupaljira.timelog_debug.crud` | `/admin/drupaljira/timelog-debug/crud/{task}` | `/admin/drupaljira/timelog-debug/crud/12` | Creates, loads, updates and deletes one time log and reports every step. |
+| `drupaljira.timelog_debug.list` | `/admin/drupaljira/timelog-debug/list/{task}` | `/admin/drupaljira/timelog-debug/list/12` | EntityQuery: all time logs of the task, sorted by `log_date` ascending.  |
+| `drupaljira.timelog_debug.sum`  | `/admin/drupaljira/timelog-debug/sum/{task}`  | `/admin/drupaljira/timelog-debug/sum/12`  | Aggregate EntityQuery: total `hours` logged on the task.                 |
