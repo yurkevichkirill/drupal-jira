@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Time tracking module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\node\Form\NodeForm;
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for the node_form base form.
+ *
+ * Adds a "Write off time" link to the edit form of an existing task node.
+ */
+function time_tracking_form_node_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  $form_object = $form_state->getFormObject();
+  if (!$form_object instanceof NodeForm) {
+    return;
+  }
+
+  $node = $form_object->getEntity();
+
+  // Only tasks, and only nodes that are already saved and have an ID.
+  if ($node->bundle() !== 'task' || $node->isNew()) {
+    return;
+  }
+
+  $url = Url::fromRoute('time_tracking.log_time', ['task' => $node->id()]);
+
+  $form['actions']['time_tracking_log_time'] = [
+    '#type' => 'link',
+    '#title' => t('Write off time'),
+    '#url' => $url,
+    '#access' => $url->access(),
+    '#attributes' => [
+      'class' => ['button'],
+    ],
+    '#weight' => 100,
+  ];
+}
