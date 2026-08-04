@@ -47,3 +47,18 @@ drupaljira.timelog_debug.sum:
         type: 'entity:node'
         bundle:
           - task
+
+time_tracking.log_time:
+  path: '/task/{task}/log-time'
+  defaults:
+    _form: '\Drupal\time_tracking\Form\TaskLogTimeForm'
+    _title: 'Log time'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _permission: 'create time_log'
+  options:
+    parameters:
+      task:
+        type: 'entity:node'
+        bundle:
+          - task

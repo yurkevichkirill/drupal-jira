@@ -1,3 +1,6 @@
 administer time_log:
   title: 'Administer time logs'
   restrict access: true
+create time_log:
+  title: 'Create time log entries'
+  description: 'Log spent time on tasks via the time write-off form.'
