@@ -123,7 +123,7 @@ final class TaskLogTimeForm extends FormBase {
     }
 
     $reason = trim((string) $form_state->getValue('over_estimate_reason'));
-    if ((bool) $form_state->getValue('over_estimate') && $reason === '') {
+    if ($form_state->getValue('over_estimate') && $reason === '') {
       $form_state->setErrorByName('over_estimate_reason', $this->t('Please explain why you log more than estimated.'));
     }
   }
