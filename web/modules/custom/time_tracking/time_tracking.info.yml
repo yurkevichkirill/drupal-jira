@@ -1,6 +1,6 @@
 name: 'Time tracking'
 type: module
-description: 'Time tracking for DrupalJira rasks.'
+description: 'Time tracking for DrupalJira tasks.'
 package: DrupalJira
 core_version_requirement: ^11
 dependencies:

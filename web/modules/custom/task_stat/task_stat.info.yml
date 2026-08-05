@@ -1,0 +1,8 @@
+name: 'Time statistics'
+type: module
+description: 'Aggregated time and estimate statistics for DrupalJira tasks and projects.'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - time_tracking:time_tracking
