@@ -10,8 +10,7 @@ use Drupal\node\NodeInterface;
 /**
  * Calculates logged time and estimate figures for tasks and projects.
  */
-class TaskStatService
-{
+class TaskStatService {
   /**
    * The entity type manager.
    *
@@ -25,8 +24,7 @@ class TaskStatService
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager)
-  {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
   }
 
@@ -40,8 +38,7 @@ class TaskStatService
    *   The total number of hours logged for the task, 0.0 when the task has no
    *   time logs yet.
    */
-  public function getLoggedHours(NodeInterface $task): float
-  {
+  public function getLoggedHours(NodeInterface $task): float {
     $storage = $this->entityTypeManager->getStorage('time_log');
     $ids = $storage->getQuery()
       ->accessCheck(FALSE)
@@ -67,8 +64,7 @@ class TaskStatService
    *   The estimate minus the logged hours. A negative value means more time
    *   was logged than estimated.
    */
-  public function getRemainingEstimate(NodeInterface $task): float
-  {
+  public function getRemainingEstimate(NodeInterface $task): float {
     $estimate = (float) ($task->get('field_estimate')->value ?? 0);
 
     return $estimate - $this->getLoggedHours($task);
@@ -89,8 +85,7 @@ class TaskStatService
    *   - over_estimate_tasks: (int) The number of tasks with more hours logged
    *     than estimated.
    */
-  public function getProjectStats(NodeInterface $project): array
-  {
+  public function getProjectStats(NodeInterface $project): array {
     $storage = $this->entityTypeManager->getStorage('node');
     $ids = $storage->getQuery()
       ->accessCheck(FALSE)
@@ -130,5 +125,7 @@ class TaskStatService
       'total_logged' => $total_logged,
       'over_estimate_tasks' => $over_estimate_tasks,
     ];
+
   }
+
 }
