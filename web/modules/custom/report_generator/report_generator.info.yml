@@ -1,0 +1,8 @@
+name: 'Report generator'
+type: module
+description: 'Pluggable project reports for DrupalJira.'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - task_stat:task_stat

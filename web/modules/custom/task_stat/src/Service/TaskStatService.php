@@ -10,7 +10,7 @@ use Drupal\node\NodeInterface;
 /**
  * Calculates logged time and estimate figures for tasks and projects.
  */
-class TaskStatService {
+final class TaskStatService {
   /**
    * The entity type manager.
    *
@@ -86,15 +86,8 @@ class TaskStatService {
    *     than estimated.
    */
   public function getProjectStats(NodeInterface $project): array {
-    $storage = $this->entityTypeManager->getStorage('node');
-    $ids = $storage->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('type', 'task')
-      ->condition('field_project', $project->id())
-      ->execute();
-
     /** @var \Drupal\node\NodeInterface[] $tasks */
-    $tasks = $storage->loadMultiple($ids);
+    $tasks = $this->getProjectTasks($project);
 
     $total_tasks = count($tasks);
     $done_tasks = 0;
@@ -126,6 +119,29 @@ class TaskStatService {
       'over_estimate_tasks' => $over_estimate_tasks,
     ];
 
+  }
+
+  /**
+   * Loads all tasks that belong to a project.
+   *
+   * @param \Drupal\node\NodeInterface $project
+   *   The project the tasks refer to through field_project.
+   *
+   * @return \Drupal\node\NodeInterface[]
+   *   The task nodes, keyed by node ID.
+   */
+  public function getProjectTasks(NodeInterface $project): array {
+    $storage = $this->entityTypeManager->getStorage('node');
+
+    $ids = $storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', 'task')
+      ->condition('field_project', $project->id())
+      ->execute();
+
+    $tasks = $storage->loadMultiple($ids);
+
+    return $tasks;
   }
 
 }

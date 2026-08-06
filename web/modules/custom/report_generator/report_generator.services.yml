@@ -1,0 +1,4 @@
+services:
+  plugin.manager.report_generator:
+    class: Drupal\report_generator\ReportGeneratorManager
+    parent: default_plugin_manager
