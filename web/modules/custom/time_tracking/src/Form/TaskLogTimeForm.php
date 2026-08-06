@@ -37,8 +37,7 @@ final class TaskLogTimeForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container): static
-  {
+  public static function create(ContainerInterface $container): static {
     $instance = new static(
       $container->get('entity_type.manager'),
       $container->get('current_user'),
