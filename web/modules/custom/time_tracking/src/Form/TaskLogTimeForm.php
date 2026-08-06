@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\time_tracking\Form;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -17,18 +19,34 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class TaskLogTimeForm extends FormBase {
 
   /**
-   * The entity type manager.
+   * Constructs a TaskLogTimeForm object.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The current user.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  public function __construct(
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected AccountInterface $account,
+    protected TimeInterface $time,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container): static {
-    $instance = new static();
-    $instance->entityTypeManager = $container->get('entity_type.manager');
+  public static function create(ContainerInterface $container): static
+  {
+    $instance = new static(
+      $container->get('entity_type.manager'),
+      $container->get('current_user'),
+      $container->get('datetime.time'),
+    );
+
+    $instance->setMessenger($container->get('messenger'));
+
     return $instance;
   }
 
@@ -69,7 +87,7 @@ final class TaskLogTimeForm extends FormBase {
     $form['log_date'] = [
       '#type' => 'date',
       '#title' => $this->t('Log date'),
-      '#default_value' => date(DateTimeItemInterface::DATE_STORAGE_FORMAT),
+      '#default_value' => date(DateTimeItemInterface::DATE_STORAGE_FORMAT, $this->time->getRequestTime()),
       '#required' => TRUE,
     ];
 
@@ -117,7 +135,7 @@ final class TaskLogTimeForm extends FormBase {
     }
 
     $log_date = (string) $form_state->getValue('log_date');
-    $today = date(DateTimeItemInterface::DATE_STORAGE_FORMAT);
+    $today = date(DateTimeItemInterface::DATE_STORAGE_FORMAT, $this->time->getRequestTime());
     if ($log_date !== '' && $log_date > $today) {
       $form_state->setErrorByName('log_date', $this->t('The log date cannot be in the future.'));
     }
@@ -137,7 +155,7 @@ final class TaskLogTimeForm extends FormBase {
 
     $time_log = $this->entityTypeManager->getStorage('time_log')->create([
       'task' => $form_state->get('task_id'),
-      'uid' => $this->currentUser()->id(),
+      'uid' => $this->account->id(),
       'hours' => (string) $form_state->getValue('hours'),
       'log_date' => (string) $form_state->getValue('log_date'),
       'notes' => (string) $form_state->getValue('notes'),
