@@ -12,6 +12,7 @@ dependencies:
     - node.type.task
   module:
     - media_library
+    - project_statistics
     - text
 id: node.task.default
 targetEntityType: node
@@ -50,11 +51,10 @@ content:
       placeholder: ''
     third_party_settings: {  }
   field_estimate:
-    type: number
+    type: hours_minutes
     weight: 125
     region: content
-    settings:
-      placeholder: ''
+    settings: {  }
     third_party_settings: {  }
   field_project:
     type: entity_reference_autocomplete

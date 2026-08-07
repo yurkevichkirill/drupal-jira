@@ -1,0 +1,20 @@
+uuid: c9b567ad-bcc9-4718-9c8d-f9144288e589
+langcode: en
+status: true
+dependencies:
+  module:
+    - project_statistics
+  theme:
+    - drupal_jira
+id: drupal_jira_projectstatistics
+theme: drupal_jira
+region: content
+weight: 0
+provider: null
+plugin: project_statistics
+settings:
+  id: project_statistics
+  label: 'Project statistics'
+  label_display: visible
+  provider: project_statistics
+visibility: {  }

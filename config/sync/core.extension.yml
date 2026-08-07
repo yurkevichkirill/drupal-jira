@@ -21,8 +21,11 @@ module:
   page_cache: 0
   paragraphs_edit: 0
   path_alias: 0
+  project_statistics: 0
+  report_generator: 0
   system: 0
   task_board: 0
+  task_stat: 0
   text: 0
   time_tracking: 0
   update: 0

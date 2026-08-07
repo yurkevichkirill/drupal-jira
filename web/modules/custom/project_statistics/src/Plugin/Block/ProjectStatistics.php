@@ -76,7 +76,13 @@ final class ProjectStatistics extends BlockBase implements ContainerFactoryPlugi
     $stats = $this->taskStatService->getProjectStats($project);
 
     return [
-      '#title' => $this->t('Statistics of "@project"', ['@project' => $project->label()]),
+      // BlockViewBuilder places the whole build array under 'content', so a
+      // bare '#title' would never be rendered — use a real element instead.
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h3',
+        '#value' => $this->t('Statistics of "@project"', ['@project' => $project->label()]),
+      ],
       'stats' => [
         '#theme' => 'item_list',
         '#items' => [

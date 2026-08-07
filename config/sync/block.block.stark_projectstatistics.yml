@@ -1,0 +1,20 @@
+uuid: 5206852d-2b38-41b9-bd3a-9737955acb74
+langcode: en
+status: true
+dependencies:
+  module:
+    - project_statistics
+  theme:
+    - stark
+id: stark_projectstatistics
+theme: stark
+region: content
+weight: 0
+provider: null
+plugin: project_statistics
+settings:
+  id: project_statistics
+  label: 'Project statistics'
+  label_display: visible
+  provider: project_statistics
+visibility: {  }
