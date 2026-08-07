@@ -1,0 +1,9 @@
+name: 'Project statistics'
+type: module
+description: 'Project statistics block, hours/minutes widget and time summary formatter for DrupalJira.'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:block
+  - task_stat:task_stat
