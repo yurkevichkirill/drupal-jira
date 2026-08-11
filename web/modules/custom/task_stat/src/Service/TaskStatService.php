@@ -40,14 +40,11 @@ final class TaskStatService {
    */
   public function getLoggedHours(NodeInterface $task): float {
     $storage = $this->entityTypeManager->getStorage('time_log');
-    $ids = $storage->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('task', $task->id())
-      ->execute();
+    $timeLogs = $storage->loadByProperties(['task' => $task->id()]);
 
     $total = 0.0;
     /** @var \Drupal\time_tracking\TimeLogInterface $timeLog */
-    foreach ($storage->loadMultiple($ids) as $timeLog) {
+    foreach ($timeLogs as $timeLog) {
       $total += (float) ($timeLog->get('hours')->value ?? 0);
     }
 
