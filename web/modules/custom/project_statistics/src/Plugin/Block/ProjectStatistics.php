@@ -73,26 +73,9 @@ final class ProjectStatistics extends BlockBase implements ContainerFactoryPlugi
       ];
     }
 
-    $stats = $this->taskStatService->getProjectStats($project);
-
     return [
-      // BlockViewBuilder places the whole build array under 'content', so a
-      // bare '#title' would never be rendered — use a real element instead.
-      'label' => [
-        '#type' => 'html_tag',
-        '#tag' => 'h3',
-        '#value' => $this->t('Statistics of "@project"', ['@project' => $project->label()]),
-      ],
-      'stats' => [
-        '#theme' => 'item_list',
-        '#items' => [
-          $this->t('Tasks: @value', ['@value' => $stats['total_tasks']]),
-          $this->t('Done: @value', ['@value' => $stats['done_tasks']]),
-          $this->t('Total estimate: @value h', ['@value' => number_format((float) $stats['total_estimate'], 2)]),
-          $this->t('Total logged: @value h', ['@value' => number_format((float) $stats['total_logged'], 2)]),
-          $this->t('Over estimate: @value', ['@value' => $stats['over_estimate_tasks']]),
-        ],
-      ],
+      '#theme' => 'drupaljira_project_stats',
+      '#project' => $project,
     ];
   }
 

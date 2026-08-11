@@ -1,0 +1,205 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Project statistics module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\node\NodeInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function project_statistics_theme($existing, $type, $theme, $path): array {
+  return [
+    'drupaljira_project_stats' => [
+      'template' => 'drupaljira-project-stats',
+      'variables' => [
+        // The project node the figures are calculated from. Everything else is
+        // filled in by the preprocess function.
+        'project' => NULL,
+        'name' => NULL,
+        'total_estimate' => NULL,
+        'remaining_estimate' => NULL,
+        'done_tasks' => NULL,
+        'total_tasks' => NULL,
+        'tasks_summary' => NULL,
+      ],
+    ],
+    'drupaljira_task_card' => [
+      'template' => 'drupaljira-task-card',
+      'variables' => [
+        // The task node the card describes. Everything else is filled in by
+        // the preprocess function.
+        'task' => NULL,
+        'status' => NULL,
+        'assignee' => NULL,
+        'assignee_initials' => NULL,
+        'remaining_estimate' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for drupaljira-project-stats.html.twig.
+ */
+function project_statistics_preprocess_drupaljira_project_stats(array &$variables): void {
+  $project = $variables['project'] ?? NULL;
+
+  if (!$project instanceof NodeInterface) {
+    return;
+  }
+
+  /** @var \Drupal\task_stat\Service\TaskStatService $task_stat */
+  $task_stat = \Drupal::service('drupaljira.task_stat');
+  $stats = $task_stat->getProjectStats($project);
+
+  $variables['name'] = $project->getTitle();
+  $variables['total_estimate'] = _project_statistics_format_hours((float) $stats['total_estimate']);
+  $variables['remaining_estimate'] = _project_statistics_format_remaining((float) $stats['remaining']);
+  $variables['done_tasks'] = $stats['done_tasks'];
+  $variables['total_tasks'] = $stats['total_tasks'];
+  $variables['tasks_summary'] = t('@done of @total done', [
+    '@done' => $stats['done_tasks'],
+    '@total' => $stats['total_tasks'],
+  ]);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for drupaljira-task-card.html.twig.
+ */
+function project_statistics_preprocess_drupaljira_task_card(array &$variables): void {
+  $task = $variables['task'] ?? NULL;
+
+  if (!$task instanceof NodeInterface) {
+    return;
+  }
+
+  /** @var \Drupal\task_stat\Service\TaskStatService $task_stat */
+  $task_stat = \Drupal::service('drupaljira.task_stat');
+
+  $assignee = $task->hasField('field_assignee') ? $task->get('field_assignee')->entity : NULL;
+  $name = $assignee instanceof UserInterface ? $assignee->getDisplayName() : NULL;
+
+  $variables['status'] = _project_statistics_status_label($task);
+  $variables['assignee'] = $name ?? t('Unassigned');
+  $variables['assignee_initials'] = $name === NULL ? '' : _project_statistics_initials($name);
+  $variables['remaining_estimate'] = _project_statistics_format_remaining($task_stat->getRemainingEstimate($task));
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node templates.
+ *
+ * Hands the Kanban board card its own theme hook, so that the card markup can
+ * be overridden from a template instead of from the teaser view display.
+ */
+function project_statistics_preprocess_node(array &$variables): void {
+  $node = $variables['node'] ?? NULL;
+
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'task') {
+    return;
+  }
+
+  if (($variables['view_mode'] ?? '') !== 'teaser') {
+    return;
+  }
+
+  $variables['task_card'] = [
+    '#theme' => 'drupaljira_task_card',
+    '#task' => $node,
+    // The remaining estimate is summed over the time logs of the task, which
+    // live outside the node and therefore outside its cache tags.
+    '#cache' => [
+      'tags' => ['time_log_list'],
+    ],
+  ];
+}
+
+/**
+ * Returns the human readable label of the status of a task.
+ *
+ * @param \Drupal\node\NodeInterface $task
+ *   The task the status is read from.
+ *
+ * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The label configured for the stored value, the raw value when the list has
+ *   no label for it, a fallback string when the task has no status at all.
+ */
+function _project_statistics_status_label(NodeInterface $task): string|TranslatableMarkup {
+  if (!$task->hasField('field_status') || $task->get('field_status')->isEmpty()) {
+    return t('No status');
+  }
+
+  $value = (string) $task->get('field_status')->value;
+  $allowed_values = (array) $task->get('field_status')
+    ->getFieldDefinition()
+    ->getFieldStorageDefinition()
+    ->getSetting('allowed_values');
+
+  return $allowed_values[$value] ?? $value;
+}
+
+/**
+ * Reduces a name to its initials.
+ *
+ * @param string $name
+ *   The name to shorten, for example the display name of a user.
+ *
+ * @return string
+ *   Up to two upper case initials, an empty string for an empty name.
+ */
+function _project_statistics_initials(string $name): string {
+  $parts = preg_split('/[\s._-]+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+  $initials = '';
+  foreach (array_slice($parts, 0, 2) as $part) {
+    $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+  }
+
+  return $initials;
+}
+
+/**
+ * Renders what is left of an estimate as a human-readable string.
+ *
+ * @param float $remaining
+ *   The estimate minus the hours already logged. A negative value means more
+ *   time was logged than estimated.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The remaining hours, or how far the estimate was overrun.
+ */
+function _project_statistics_format_remaining(float $remaining): TranslatableMarkup {
+  if ($remaining < 0) {
+    return t('over estimate by @hours', [
+      '@hours' => _project_statistics_format_hours(abs($remaining)),
+    ]);
+  }
+
+  return _project_statistics_format_hours($remaining);
+}
+
+/**
+ * Renders a number of hours as a human-readable string.
+ *
+ * @param float $hours
+ *   The number of hours to format.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The rounded amount followed by its unit of measurement.
+ */
+function _project_statistics_format_hours(float $hours): TranslatableMarkup {
+  $rounded = round($hours, 2);
+  $formatted = rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
+
+  if ($rounded === 1.0) {
+    return t('@value hour', ['@value' => $formatted]);
+  }
+
+  return t('@value hours', ['@value' => $formatted]);
+}

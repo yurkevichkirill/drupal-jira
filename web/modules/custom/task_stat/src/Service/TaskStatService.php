@@ -79,6 +79,8 @@ final class TaskStatService {
    *   - done_tasks: (int) The number of tasks whose field_status is 'done'.
    *   - total_estimate: (float) The sum of field_estimate over all tasks.
    *   - total_logged: (float) The sum of the hours logged against all tasks.
+   *   - remaining: (float) What is left of the estimate of the project. A
+   *     negative value means more time was logged than estimated.
    *   - over_estimate_tasks: (int) The number of tasks with more hours logged
    *     than estimated.
    */
@@ -113,6 +115,7 @@ final class TaskStatService {
       'done_tasks' => $done_tasks,
       'total_estimate' => $total_estimate,
       'total_logged' => $total_logged,
+      'remaining' => $total_estimate - $total_logged,
       'over_estimate_tasks' => $over_estimate_tasks,
     ];
 

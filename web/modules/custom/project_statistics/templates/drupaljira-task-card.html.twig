@@ -1,0 +1,45 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the body of a DrupalJira task card.
+ *
+ * Available variables:
+ * - status: The label of the status of the task, as configured on
+ *   field_status.
+ * - assignee: The display name of the user in field_assignee, or a fallback
+ *   label when the task is not assigned.
+ * - assignee_initials: Up to two initials of that display name, an empty
+ *   string when the task is not assigned.
+ * - remaining_estimate: What is left of the estimate of the task, already
+ *   rounded and carrying its unit of measurement. Reads as an overrun when
+ *   more time was logged than estimated.
+ * - task: The task node the values were prepared from. Every value above is
+ *   prepared in the preprocess function; the node is only here for templates
+ *   that need more than the card shows.
+ *
+ * @see project_statistics_preprocess_drupaljira_task_card()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="task-card__meta">
+  <dl class="task-card__list">
+    <div class="task-card__item">
+      <dt class="task-card__label">{{ 'Status'|t }}</dt>
+      <dd class="task-card__value">{{ status }}</dd>
+    </div>
+    <div class="task-card__item">
+      <dt class="task-card__label">{{ 'Assignee'|t }}</dt>
+      <dd class="task-card__value">
+        {% if assignee_initials %}
+          <span class="task-card__initials">{{ assignee_initials }}</span>
+        {% endif %}
+        {{ assignee }}
+      </dd>
+    </div>
+    <div class="task-card__item">
+      <dt class="task-card__label">{{ 'Remaining'|t }}</dt>
+      <dd class="task-card__value">{{ remaining_estimate }}</dd>
+    </div>
+  </dl>
+</div>

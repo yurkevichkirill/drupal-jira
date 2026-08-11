@@ -65,6 +65,38 @@
   color: #4b5563;
 }
 
+.task-card__list {
+  margin: 0;
+}
+
+.task-card__item {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.task-card__label {
+  font-weight: 600;
+}
+
+.task-card__label::after {
+  content: ":";
+}
+
+.task-card__value {
+  margin: 0;
+}
+
+.task-card__initials {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 0 0.2rem;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #374151;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 /* The Frontend Editing panel has to sit above the core modal dialog. */
 .frontend-editing-container,
 .frontend-editing-wrapper {

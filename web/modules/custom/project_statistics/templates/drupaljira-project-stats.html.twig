@@ -1,0 +1,42 @@
+{#
+/**
+ * @file
+ * Default theme implementation for the DrupalJira project statistics.
+ *
+ * Available variables:
+ * - name: The title of the project the figures belong to.
+ * - total_estimate: The sum of the estimates of every task of the project,
+ *   already rounded and carrying its unit of measurement.
+ * - remaining_estimate: What is left of the project estimate, already rounded
+ *   and carrying its unit of measurement. Reads as an overrun when more time
+ *   was logged than estimated.
+ * - tasks_summary: How many tasks of the project are done, as a sentence.
+ * - done_tasks: The number of tasks in the "done" status.
+ * - total_tasks: The total number of tasks of the project.
+ * - project: The project node the figures were calculated from. Every value
+ *   above is prepared in the preprocess function; the node is only here for
+ *   templates that need to link back to the project.
+ *
+ * @see project_statistics_preprocess_drupaljira_project_stats()
+ *
+ * @ingroup themeable
+ */
+#}
+<div class="project-stats">
+  <h3 class="project-stats__title">{{ name }}</h3>
+
+  <dl class="project-stats__list">
+    <div class="project-stats__item">
+      <dt class="project-stats__label">{{ 'Total estimate'|t }}</dt>
+      <dd class="project-stats__value">{{ total_estimate }}</dd>
+    </div>
+    <div class="project-stats__item">
+      <dt class="project-stats__label">{{ 'Remaining'|t }}</dt>
+      <dd class="project-stats__value">{{ remaining_estimate }}</dd>
+    </div>
+    <div class="project-stats__item">
+      <dt class="project-stats__label">{{ 'Tasks done'|t }}</dt>
+      <dd class="project-stats__value">{{ tasks_summary }}</dd>
+    </div>
+  </dl>
+</div>
