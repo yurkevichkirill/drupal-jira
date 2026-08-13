@@ -63,7 +63,7 @@ function project_statistics_preprocess_drupaljira_project_stats(array &$variable
   $stats = $task_stat->getProjectStats($project);
 
   $variables['name'] = $project->getTitle();
-  $variables['total_estimate'] = _project_statistics_format_hours((float) $stats['total_estimate']);
+  $variables['total_estimate'] = \Drupal::service('drupaljira.duration_formatter')->format((float) $stats['total_estimate']);
   $variables['remaining_estimate'] = _project_statistics_format_remaining((float) $stats['remaining']);
   $variables['done_tasks'] = $stats['done_tasks'];
   $variables['total_tasks'] = $stats['total_tasks'];
@@ -184,31 +184,11 @@ function _project_statistics_initials(string $name): string {
 function _project_statistics_format_remaining(float $remaining): TranslatableMarkup {
   if ($remaining < 0) {
     return t('over estimate by @hours', [
-      '@hours' => _project_statistics_format_hours(abs($remaining)),
+      '@hours' => \Drupal::service('drupaljira.duration_formatter')->format(abs($remaining)),
     ]);
   }
 
-  return _project_statistics_format_hours($remaining);
-}
-
-/**
- * Renders a number of hours as a human-readable string.
- *
- * @param float $hours
- *   The number of hours to format.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- *   The rounded amount followed by its unit of measurement.
- */
-function _project_statistics_format_hours(float $hours): TranslatableMarkup {
-  $rounded = round($hours, 2);
-  $formatted = rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
-
-  if ($rounded === 1.0) {
-    return t('@value hour', ['@value' => $formatted]);
-  }
-
-  return t('@value hours', ['@value' => $formatted]);
+  return \Drupal::service('drupaljira.duration_formatter')->format($remaining);
 }
 
 /**

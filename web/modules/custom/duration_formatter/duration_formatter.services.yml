@@ -1,0 +1,4 @@
+services:
+  drupaljira.duration_formatter:
+    class: Drupal\duration_formatter\Service\DurationFormatter
+    arguments: ['@string_translation']
