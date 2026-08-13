@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Task board module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\views\ViewExecutable;
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function task_board_views_pre_render(ViewExecutable $view): void {
+  if ($view->id() !== 'task_board') {
+    return;
+  }
+
+  // Cards assigned to the person looking at the board are marked as their own,
+  // so the board reads differently for every user. Roles are not enough here:
+  // two teammates with the same roles still see a different set of cards
+  // highlighted.
+  // @see project_statistics_preprocess_drupaljira_task_card()
+  $view->element['#cache']['contexts'][] = 'user';
+}

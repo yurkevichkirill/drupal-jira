@@ -13,16 +13,29 @@
  * - remaining_estimate: What is left of the estimate of the task, already
  *   rounded and carrying its unit of measurement. Reads as an overrun when
  *   more time was logged than estimated.
+ * - is_mine: TRUE when the task is assigned to the user the page is rendered
+ *   for. Whatever is keyed off this varies per user, so the render array of
+ *   the card carries the 'user' cache context.
  * - task: The task node the values were prepared from. Every value above is
  *   prepared in the preprocess function; the node is only here for templates
  *   that need more than the card shows.
  *
  * @see project_statistics_preprocess_drupaljira_task_card()
+ * @see project_statistics_preprocess_node()
  *
  * @ingroup themeable
  */
 #}
-<div class="task-card__meta">
+{%
+  set meta_classes = [
+    'task-card__meta',
+    is_mine ? 'task-card__meta--mine',
+  ]
+%}
+<div class="{{ meta_classes|filter(class => class)|join(' ') }}">
+  {% if is_mine %}
+    <p class="task-card__mine-badge">{{ 'My task'|t }}</p>
+  {% endif %}
   <dl class="task-card__list">
     <div class="task-card__item">
       <dt class="task-card__label">{{ 'Status'|t }}</dt>

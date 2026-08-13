@@ -7,8 +7,10 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
+use Drupal\time_tracking\TimeLogInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -36,6 +38,7 @@ function project_statistics_theme($existing, $type, $theme, $path): array {
         // The task node the card describes. Everything else is filled in by
         // the preprocess function.
         'task' => NULL,
+        'is_mine' => FALSE,
         'status' => NULL,
         'assignee' => NULL,
         'assignee_initials' => NULL,
@@ -85,7 +88,7 @@ function project_statistics_preprocess_drupaljira_task_card(array &$variables): 
 
   $assignee = $task->hasField('field_assignee') ? $task->get('field_assignee')->entity : NULL;
   $name = $assignee instanceof UserInterface ? $assignee->getDisplayName() : NULL;
-
+  $variables['is_mine'] = _project_statistics_is_my_task($task);
   $variables['status'] = _project_statistics_status_label($task);
   $variables['assignee'] = $name ?? t('Unassigned');
   $variables['assignee_initials'] = $name === NULL ? '' : _project_statistics_initials($name);
@@ -112,10 +115,14 @@ function project_statistics_preprocess_node(array &$variables): void {
   $variables['task_card'] = [
     '#theme' => 'drupaljira_task_card',
     '#task' => $node,
-    // The remaining estimate is summed over the time logs of the task, which
-    // live outside the node and therefore outside its cache tags.
     '#cache' => [
+      // The remaining estimate is summed over the time logs of the task, which
+      // live outside the node and therefore outside its cache tags.
       'tags' => ['time_log_list'],
+      // The card marks itself when it is assigned to the person looking at it.
+      // The teaser is render cached under its own keys, so without this the
+      // variant built for the first visitor would be handed to everybody else.
+      'contexts' => ['user'],
     ],
   ];
 }
@@ -202,4 +209,129 @@ function _project_statistics_format_hours(float $hours): TranslatableMarkup {
   }
 
   return t('@value hours', ['@value' => $formatted]);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for time_log entities.
+ */
+function project_statistics_time_log_insert(TimeLogInterface $time_log): void {
+  Cache::invalidateTags(_project_statistics_time_log_cache_tags($time_log));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for time_log entities.
+ */
+function project_statistics_time_log_update(TimeLogInterface $time_log): void {
+  // The log may have been moved to a task of another project, which changes the
+  // figures of the project it was taken away from as well.
+  Cache::invalidateTags(Cache::mergeTags(
+    _project_statistics_time_log_cache_tags($time_log),
+    _project_statistics_time_log_cache_tags($time_log->getOriginal()),
+  ));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for time_log entities.
+ */
+function project_statistics_time_log_delete(TimeLogInterface $time_log): void {
+  Cache::invalidateTags(_project_statistics_time_log_cache_tags($time_log));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ */
+function project_statistics_node_insert(NodeInterface $node): void {
+  Cache::invalidateTags(_project_statistics_task_cache_tags($node));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node entities.
+ */
+function project_statistics_node_update(NodeInterface $node): void {
+  // The task may have been moved to another project, which changes the figures
+  // of the project it was taken away from as well.
+  Cache::invalidateTags(Cache::mergeTags(
+    _project_statistics_task_cache_tags($node),
+    _project_statistics_task_cache_tags($node->getOriginal()),
+  ));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for node entities.
+ */
+function project_statistics_node_delete(NodeInterface $node): void {
+  Cache::invalidateTags(_project_statistics_task_cache_tags($node));
+}
+
+/**
+ * Builds the statistics cache tag of the project a task belongs to.
+ *
+ * @param \Drupal\node\NodeInterface|null $task
+ *   The task node, NULL when there is no task to report on.
+ *
+ * @return string[]
+ *   The statistics cache tag of the project of the task. An empty array when
+ *   the node is not a task or references no project, so that the result can be
+ *   handed on without further checks.
+ */
+function _project_statistics_task_cache_tags(?NodeInterface $task): array {
+  if (!$task instanceof NodeInterface || $task->bundle() !== 'task') {
+    return [];
+  }
+
+  // Read the raw target id: the referenced project may have been deleted while
+  // the task kept pointing at it, and loading it back is not needed for a tag.
+  $project_id = $task->get('field_project')->target_id;
+
+  return $project_id === NULL ? [] : ['drupaljira_project_stats:' . $project_id];
+}
+
+/**
+ * Builds the statistics cache tag of the project a time log belongs to.
+ *
+ * @param \Drupal\time_tracking\TimeLogInterface|null $time_log
+ *   The time log, NULL when there is no time log to report on.
+ *
+ * @return string[]
+ *   The statistics cache tag of the project the logged task belongs to. An
+ *   empty array when the log references no task, or when that task references
+ *   no project.
+ */
+function _project_statistics_time_log_cache_tags(?TimeLogInterface $time_log): array {
+  if (!$time_log instanceof TimeLogInterface) {
+    return [];
+  }
+
+  $task = $time_log->get('task')->entity;
+
+  return _project_statistics_task_cache_tags($task instanceof NodeInterface ? $task : NULL);
+}
+
+/**
+ * Tells whether a task is assigned to the user the page is rendered for.
+ *
+ * Anything that is rendered from this answer varies by user and has to carry
+ * the 'user' cache context, or one visitor is served the board of another.
+ *
+ * @param \Drupal\node\NodeInterface $task
+ *   The task the assignee is read from.
+ *
+ * @return bool
+ *   TRUE when the task is assigned to the current user, FALSE when it is
+ *   assigned to somebody else, unassigned, or nobody is logged in.
+ */
+function _project_statistics_is_my_task(NodeInterface $task): bool {
+  $current_user = \Drupal::currentUser();
+
+  // An anonymous visitor owns nothing: uid 0 would otherwise match every
+  // unassigned task, whose target id casts to 0 just the same.
+  if (!$current_user->isAuthenticated() || !$task->hasField('field_assignee')) {
+    return FALSE;
+  }
+
+  $assignee_id = $task->get('field_assignee')->target_id;
+
+  // Field values come back as strings when the node was loaded from storage
+  // and as integers when it was built in code, so neither side is trusted.
+  return $assignee_id !== NULL && (int) $current_user->id() === (int) $assignee_id;
 }
