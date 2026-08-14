@@ -6,4 +6,6 @@ core_version_requirement: ^11
 dependencies:
   - drupal:node
   - drupal:block
+  - drupal:user
   - task_stat:task_stat
+  - time_tracking:time_tracking

@@ -1,0 +1,323 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the Project statistics module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\node\NodeInterface;
+use Drupal\time_tracking\TimeLogInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function project_statistics_theme($existing, $type, $theme, $path): array {
+  return [
+    'drupaljira_project_stats' => [
+      'template' => 'drupaljira-project-stats',
+      'variables' => [
+        // The project node the figures are calculated from. Everything else is
+        // filled in by the preprocess function.
+        'project' => NULL,
+        'name' => NULL,
+        'total_estimate' => NULL,
+        'remaining_estimate' => NULL,
+        'done_tasks' => NULL,
+        'total_tasks' => NULL,
+        'tasks_summary' => NULL,
+      ],
+    ],
+    'drupaljira_task_card' => [
+      'template' => 'drupaljira-task-card',
+      'variables' => [
+        // The task node the card describes. Everything else is filled in by
+        // the preprocess function.
+        'task' => NULL,
+        'is_mine' => FALSE,
+        'status' => NULL,
+        'assignee' => NULL,
+        'assignee_initials' => NULL,
+        'remaining_estimate' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for project statistics templates.
+ *
+ * @see drupaljira-project-stats.html.twig
+ */
+function project_statistics_preprocess_drupaljira_project_stats(array &$variables): void {
+  $project = $variables['project'] ?? NULL;
+
+  if (!$project instanceof NodeInterface) {
+    return;
+  }
+
+  /** @var \Drupal\task_stat\Service\TaskStatService $task_stat */
+  $task_stat = \Drupal::service('drupaljira.task_stat');
+  $stats = $task_stat->getProjectStats($project);
+
+  $variables['name'] = $project->getTitle();
+  $variables['total_estimate'] = \Drupal::service('drupaljira.duration_formatter')->format((float) $stats['total_estimate']);
+  $variables['remaining_estimate'] = _project_statistics_format_remaining((float) $stats['remaining']);
+  $variables['done_tasks'] = $stats['done_tasks'];
+  $variables['total_tasks'] = $stats['total_tasks'];
+  $variables['tasks_summary'] = t('@done of @total done', [
+    '@done' => $stats['done_tasks'],
+    '@total' => $stats['total_tasks'],
+  ]);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for task card templates.
+ *
+ * @see drupaljira-task-card.html.twig
+ */
+function project_statistics_preprocess_drupaljira_task_card(array &$variables): void {
+  $task = $variables['task'] ?? NULL;
+
+  if (!$task instanceof NodeInterface) {
+    return;
+  }
+
+  /** @var \Drupal\task_stat\Service\TaskStatService $task_stat */
+  $task_stat = \Drupal::service('drupaljira.task_stat');
+
+  $assignee = $task->hasField('field_assignee') ? $task->get('field_assignee')->entity : NULL;
+  $name = $assignee instanceof UserInterface ? $assignee->getDisplayName() : NULL;
+  $variables['is_mine'] = _project_statistics_is_my_task($task);
+  $variables['status'] = _project_statistics_status_label($task);
+  $variables['assignee'] = $name ?? t('Unassigned');
+  $variables['assignee_initials'] = $name === NULL ? '' : _project_statistics_initials($name);
+  $variables['remaining_estimate'] = _project_statistics_format_remaining($task_stat->getRemainingEstimate($task));
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node templates.
+ *
+ * Hands the Kanban board card its own theme hook, so that the card markup can
+ * be overridden from a template instead of from the teaser view display.
+ *
+ * @see node.html.twig
+ */
+function project_statistics_preprocess_node(array &$variables): void {
+  $node = $variables['node'] ?? NULL;
+
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'task') {
+    return;
+  }
+
+  if (($variables['view_mode'] ?? '') !== 'teaser') {
+    return;
+  }
+
+  $variables['task_card'] = [
+    '#theme' => 'drupaljira_task_card',
+    '#task' => $node,
+    '#cache' => [
+      // The remaining estimate is summed over the time logs of the task, which
+      // live outside the node and therefore outside its cache tags.
+      'tags' => ['time_log_list'],
+      // The card marks itself when it is assigned to the person looking at it.
+      // The teaser is render cached under its own keys, so without this the
+      // variant built for the first visitor would be handed to everybody else.
+      'contexts' => ['user'],
+    ],
+  ];
+}
+
+/**
+ * Returns the human readable label of the status of a task.
+ *
+ * @param \Drupal\node\NodeInterface $task
+ *   The task the status is read from.
+ *
+ * @return string|\Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The label configured for the stored value, the raw value when the list has
+ *   no label for it, a fallback string when the task has no status at all.
+ */
+function _project_statistics_status_label(NodeInterface $task): string|TranslatableMarkup {
+  if (!$task->hasField('field_status') || $task->get('field_status')->isEmpty()) {
+    return t('No status');
+  }
+
+  $value = (string) $task->get('field_status')->value;
+  $allowed_values = (array) $task->get('field_status')
+    ->getFieldDefinition()
+    ->getFieldStorageDefinition()
+    ->getSetting('allowed_values');
+
+  return $allowed_values[$value] ?? $value;
+}
+
+/**
+ * Reduces a name to its initials.
+ *
+ * @param string $name
+ *   The name to shorten, for example the display name of a user.
+ *
+ * @return string
+ *   Up to two upper case initials, an empty string for an empty name.
+ */
+function _project_statistics_initials(string $name): string {
+  $parts = preg_split('/[\s._-]+/u', trim($name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+  $initials = '';
+  foreach (array_slice($parts, 0, 2) as $part) {
+    $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+  }
+
+  return $initials;
+}
+
+/**
+ * Renders what is left of an estimate as a human-readable string.
+ *
+ * @param float $remaining
+ *   The estimate minus the hours already logged. A negative value means more
+ *   time was logged than estimated.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   The remaining hours, or how far the estimate was overrun.
+ */
+function _project_statistics_format_remaining(float $remaining): TranslatableMarkup {
+  if ($remaining < 0) {
+    return t('over estimate by @hours', [
+      '@hours' => \Drupal::service('drupaljira.duration_formatter')->format(abs($remaining)),
+    ]);
+  }
+
+  return \Drupal::service('drupaljira.duration_formatter')->format($remaining);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for time_log entities.
+ */
+function project_statistics_time_log_insert(TimeLogInterface $time_log): void {
+  Cache::invalidateTags(_project_statistics_time_log_cache_tags($time_log));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for time_log entities.
+ */
+function project_statistics_time_log_update(TimeLogInterface $time_log): void {
+  // The log may have been moved to a task of another project, which changes the
+  // figures of the project it was taken away from as well.
+  Cache::invalidateTags(Cache::mergeTags(
+    _project_statistics_time_log_cache_tags($time_log),
+    _project_statistics_time_log_cache_tags($time_log->getOriginal()),
+  ));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for time_log entities.
+ */
+function project_statistics_time_log_delete(TimeLogInterface $time_log): void {
+  Cache::invalidateTags(_project_statistics_time_log_cache_tags($time_log));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ */
+function project_statistics_node_insert(NodeInterface $node): void {
+  Cache::invalidateTags(_project_statistics_task_cache_tags($node));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node entities.
+ */
+function project_statistics_node_update(NodeInterface $node): void {
+  // The task may have been moved to another project, which changes the figures
+  // of the project it was taken away from as well.
+  Cache::invalidateTags(Cache::mergeTags(
+    _project_statistics_task_cache_tags($node),
+    _project_statistics_task_cache_tags($node->getOriginal()),
+  ));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for node entities.
+ */
+function project_statistics_node_delete(NodeInterface $node): void {
+  Cache::invalidateTags(_project_statistics_task_cache_tags($node));
+}
+
+/**
+ * Builds the statistics cache tag of the project a task belongs to.
+ *
+ * @param \Drupal\node\NodeInterface|null $task
+ *   The task node, NULL when there is no task to report on.
+ *
+ * @return string[]
+ *   The statistics cache tag of the project of the task. An empty array when
+ *   the node is not a task or references no project, so that the result can be
+ *   handed on without further checks.
+ */
+function _project_statistics_task_cache_tags(?NodeInterface $task): array {
+  if (!$task instanceof NodeInterface || $task->bundle() !== 'task') {
+    return [];
+  }
+
+  // Read the raw target id: the referenced project may have been deleted while
+  // the task kept pointing at it, and loading it back is not needed for a tag.
+  $project_id = $task->get('field_project')->target_id;
+
+  return $project_id === NULL ? [] : ['drupaljira_project_stats:' . $project_id];
+}
+
+/**
+ * Builds the statistics cache tag of the project a time log belongs to.
+ *
+ * @param \Drupal\time_tracking\TimeLogInterface|null $time_log
+ *   The time log, NULL when there is no time log to report on.
+ *
+ * @return string[]
+ *   The statistics cache tag of the project the logged task belongs to. An
+ *   empty array when the log references no task, or when that task references
+ *   no project.
+ */
+function _project_statistics_time_log_cache_tags(?TimeLogInterface $time_log): array {
+  if (!$time_log instanceof TimeLogInterface) {
+    return [];
+  }
+
+  $task = $time_log->get('task')->entity;
+
+  return _project_statistics_task_cache_tags($task instanceof NodeInterface ? $task : NULL);
+}
+
+/**
+ * Tells whether a task is assigned to the user the page is rendered for.
+ *
+ * Anything that is rendered from this answer varies by user and has to carry
+ * the 'user' cache context, or one visitor is served the board of another.
+ *
+ * @param \Drupal\node\NodeInterface $task
+ *   The task the assignee is read from.
+ *
+ * @return bool
+ *   TRUE when the task is assigned to the current user, FALSE when it is
+ *   assigned to somebody else, unassigned, or nobody is logged in.
+ */
+function _project_statistics_is_my_task(NodeInterface $task): bool {
+  $current_user = \Drupal::currentUser();
+
+  // An anonymous visitor owns nothing: uid 0 would otherwise match every
+  // unassigned task, whose target id casts to 0 just the same.
+  if (!$current_user->isAuthenticated() || !$task->hasField('field_assignee')) {
+    return FALSE;
+  }
+
+  $assignee_id = $task->get('field_assignee')->target_id;
+
+  // Field values come back as strings when the node was loaded from storage
+  // and as integers when it was built in code, so neither side is trusted.
+  return $assignee_id !== NULL && (int) $current_user->id() === (int) $assignee_id;
+}

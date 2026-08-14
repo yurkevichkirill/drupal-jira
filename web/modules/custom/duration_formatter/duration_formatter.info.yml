@@ -1,0 +1,7 @@
+name: 'Duration formatter'
+type: module
+description: 'Format time values'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - drupal:node

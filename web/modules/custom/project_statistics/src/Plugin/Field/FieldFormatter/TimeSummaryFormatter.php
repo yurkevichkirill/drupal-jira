@@ -10,6 +10,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\duration_formatter\Service\DurationFormatter;
 use Drupal\node\NodeInterface;
 use Drupal\task_stat\Service\TaskStatService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -43,6 +44,8 @@ final class TimeSummaryFormatter extends FormatterBase implements ContainerFacto
    *   Any third party settings.
    * @param \Drupal\task_stat\Service\TaskStatService $taskStatService
    *   The task statistics service.
+   * @param \Drupal\duration_formatter\Service\DurationFormatter $durationFormatter
+   *   The duration formatter service.
    */
   public function __construct(
     $plugin_id,
@@ -53,6 +56,7 @@ final class TimeSummaryFormatter extends FormatterBase implements ContainerFacto
     $view_mode,
     array $third_party_settings,
     protected readonly TaskStatService $taskStatService,
+    protected readonly DurationFormatter $durationFormatter,
   ) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
   }
@@ -70,6 +74,7 @@ final class TimeSummaryFormatter extends FormatterBase implements ContainerFacto
       $configuration['view_mode'],
       $configuration['third_party_settings'],
       $container->get('drupaljira.task_stat'),
+      $container->get('drupaljira.duration_formatter'),
     );
   }
 
@@ -87,27 +92,14 @@ final class TimeSummaryFormatter extends FormatterBase implements ContainerFacto
       $estimate = (float) $item->value;
 
       if (!$is_task) {
-        $elements[$delta] = ['#markup' => $this->formatHours($estimate)];
+        $elements[$delta] = ['#markup' => $this->durationFormatter->format($estimate)];
         continue;
       }
 
       $logged = $this->taskStatService->getLoggedHours($entity);
       $remaining = $this->taskStatService->getRemainingEstimate($entity);
 
-      if ($remaining < 0) {
-        $summary = $this->t('@estimate (@logged written off, over estimate by @over)', [
-          '@estimate' => $this->formatHours($estimate),
-          '@logged' => $this->formatHours($logged),
-          '@over' => $this->formatHours(abs($remaining)),
-        ]);
-      }
-      else {
-        $summary = $this->t('@estimate (@logged written off, @remaining left)', [
-          '@estimate' => $this->formatHours($estimate),
-          '@logged' => $this->formatHours($logged),
-          '@remaining' => $this->formatHours($remaining),
-        ]);
-      }
+      $summary = $this->durationFormatter->formatSummary($estimate, $logged, $remaining);
 
       $elements[$delta] = ['#markup' => $summary];
     }
@@ -118,27 +110,6 @@ final class TimeSummaryFormatter extends FormatterBase implements ContainerFacto
     }
 
     return $elements;
-  }
-
-  /**
-   * Renders an amount of hours as a human readable string.
-   *
-   * @param float $hours
-   *   The amount of hours.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   A string such as "1 hour" or "2.5 hours".
-   */
-  private function formatHours(float $hours): TranslatableMarkup {
-    $rounded = round($hours, 2);
-    // Trim the trailing zeros so that 2.50 reads as "2.5" and 3.00 as "3".
-    $formatted = rtrim(rtrim(number_format($rounded, 2, '.', ''), '0'), '.');
-
-    if ($rounded === 1.0) {
-      return $this->t('@value hour', ['@value' => $formatted]);
-    }
-
-    return $this->t('@value hours', ['@value' => $formatted]);
   }
 
 }

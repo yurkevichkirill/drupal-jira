@@ -7,8 +7,13 @@
  * that shows the same task in the Full view mode, so opening a task never
  * leaves the board.
  *
+ * The body of the card comes from its own theme hook rather than from the
+ * teaser view display: the figures it shows are aggregated over the time logs
+ * of the task and therefore cannot be produced by a field formatter.
+ *
  * @see js/task-board.js
  * @see template_preprocess_node()
+ * @see project_statistics_preprocess_node()
  */
 #}
 {{ attach_library('core/drupal.dialog.ajax') }}
@@ -21,7 +26,7 @@
   {{ title_suffix }}
 
   <div{{ content_attributes.addClass('task-card__content') }}>
-    {{ content }}
+    {{ task_card }}
   </div>
 
 </article>
