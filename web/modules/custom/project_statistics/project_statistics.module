@@ -49,7 +49,9 @@ function project_statistics_theme($existing, $type, $theme, $path): array {
 }
 
 /**
- * Implements hook_preprocess_HOOK() for drupaljira-project-stats.html.twig.
+ * Implements hook_preprocess_HOOK() for project statistics templates.
+ *
+ * @see drupaljira-project-stats.html.twig
  */
 function project_statistics_preprocess_drupaljira_project_stats(array &$variables): void {
   $project = $variables['project'] ?? NULL;
@@ -74,7 +76,9 @@ function project_statistics_preprocess_drupaljira_project_stats(array &$variable
 }
 
 /**
- * Implements hook_preprocess_HOOK() for drupaljira-task-card.html.twig.
+ * Implements hook_preprocess_HOOK() for task card templates.
+ *
+ * @see drupaljira-task-card.html.twig
  */
 function project_statistics_preprocess_drupaljira_task_card(array &$variables): void {
   $task = $variables['task'] ?? NULL;
@@ -100,6 +104,8 @@ function project_statistics_preprocess_drupaljira_task_card(array &$variables): 
  *
  * Hands the Kanban board card its own theme hook, so that the card markup can
  * be overridden from a template instead of from the teaser view display.
+ *
+ * @see node.html.twig
  */
 function project_statistics_preprocess_node(array &$variables): void {
   $node = $variables['node'] ?? NULL;
