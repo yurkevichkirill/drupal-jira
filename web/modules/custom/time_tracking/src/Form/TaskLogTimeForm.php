@@ -11,7 +11,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\node\NodeInterface;
+use Drupal\time_tracking\Event\TimeLogCreatedEvent;
+use Drupal\time_tracking\TimeLogInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Provides a time write-off form for a single task.
@@ -23,6 +26,8 @@ final class TaskLogTimeForm extends FormBase {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   *   The event dispatcher.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
    * @param \Drupal\Component\Datetime\TimeInterface $time
@@ -30,6 +35,7 @@ final class TaskLogTimeForm extends FormBase {
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected EventDispatcherInterface $eventDispatcher,
     protected AccountInterface $account,
     protected TimeInterface $time,
   ) {}
@@ -40,6 +46,7 @@ final class TaskLogTimeForm extends FormBase {
   public static function create(ContainerInterface $container): static {
     $instance = new static(
       $container->get('entity_type.manager'),
+      $container->get('event_dispatcher'),
       $container->get('current_user'),
       $container->get('datetime.time'),
     );
@@ -161,6 +168,11 @@ final class TaskLogTimeForm extends FormBase {
       'over_estimate_reason' => $over_estimate ? $reason : NULL,
     ]);
     $time_log->save();
+
+    if (!$time_log instanceof TimeLogInterface) {
+      return;
+    }
+    $this->eventDispatcher->dispatch(new TimeLogCreatedEvent($time_log), TimeLogCreatedEvent::EVENT_NAME);
 
     $this->messenger()->addStatus($this->t('Logged @hours h.', [
       '@hours' => $form_state->getValue('hours'),
