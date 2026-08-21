@@ -1,0 +1,6 @@
+services:
+  drupaljira.time_log_insert_subscriber:
+    class: Drupal\time_tracking\EventSubscriber\TimeLogInsertSubscriber
+    arguments: ['@logger.factory']
+    tags:
+      - { name: event_subscriber }

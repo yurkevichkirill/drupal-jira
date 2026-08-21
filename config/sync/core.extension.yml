@@ -5,6 +5,7 @@ module:
   contextual: 0
   datetime: 0
   dblog: 0
+  duration_formatter: 0
   dynamic_page_cache: 0
   entity_reference_revisions: 0
   field: 0
@@ -13,8 +14,12 @@ module:
   filter: 0
   frontend_editing: 0
   image: 0
+  json_migration: 0
   media: 0
   media_library: 0
+  migrate: 0
+  migrate_plus: 0
+  migrate_tools: 0
   mysql: 0
   node: 0
   options: 0

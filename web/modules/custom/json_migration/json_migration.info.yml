@@ -1,0 +1,8 @@
+name: JSON Migration
+type: module
+description: 'JSON Migration tool'
+package: DrupalJira
+core_version_requirement: ^11
+dependencies:
+  - migrate_plus:migrate_plus
+  - migrate_tools:migrate_tools

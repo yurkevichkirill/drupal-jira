@@ -1,0 +1,64 @@
+id: json_articles
+label: 'Import tasks from JSON'
+migration_group: json_migration
+source:
+  plugin: url
+  data_fetcher_plugin: file
+  data_parser_plugin: json
+  urls:
+    - modules/custom/json_migration/data/articles.json
+  item_selector: tasks
+  fields:
+    - name: id
+      label: 'ID'
+      selector: id
+    - name: title
+      label: 'Title'
+      selector: title
+    - name: project
+      label: 'Project'
+      selector: project
+    - name: status
+      label: 'Status'
+      selector: status
+    - name: estimate
+      label: 'Estimate'
+      selector: estimate
+  ids:
+    id:
+      type: integer
+
+process:
+  title: title
+  field_project:
+    plugin: entity_lookup
+    source: project
+    entity_type: node
+    value_key: title
+    bundle_key: type
+    bundle: project
+    ignore_case: true
+  field_status:
+    plugin: static_map
+    source: status
+    map:
+      'backlog': backlog
+      'in_progress': in_progress
+      'review': review
+      'done': done
+      'Backlog': backlog
+      'To Do': backlog
+      'In Progress': in_progress
+      'in progress': in_progress
+      'Review': review
+      'In Review': review
+      'Done': done
+      'Closed': done
+      'Completed': done
+    default_value: backlog
+    bypass: false
+  field_estimate: estimate
+
+destination:
+  plugin: 'entity:node'
+  default_bundle: task
