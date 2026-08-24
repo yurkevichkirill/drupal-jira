@@ -1,0 +1,108 @@
+<?php
+
+/**
+ * @file
+ * Update hooks for the Update tasks projects module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Sets the initial Content Moderation state on Task nodes from field_status.
+ */
+function update_tasks_projects_update_9001(&$sandbox): string {
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['updated'] = 0;
+    $sandbox['current_id'] = 0;
+    $sandbox['max'] = \Drupal::entityQuery('node')
+      ->condition('type', 'task')
+      ->accessCheck(FALSE)
+      ->count()
+      ->execute();
+  }
+
+  $nids = \Drupal::entityQuery('node')
+    ->condition('type', 'task')
+    ->condition('nid', $sandbox['current_id'], '>')
+    ->sort('nid')
+    ->range(0, 5)
+    ->accessCheck(FALSE)
+    ->execute();
+
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  foreach ($storage->loadMultiple($nids) as $node) {
+    if ($node->hasField('moderation_state') && $node->hasField('field_status') && !$node->get('field_status')->isEmpty() && $node->get('moderation_state')->value !== $node->get('field_status')->value) {
+      $node->set('moderation_state', $node->get('field_status')->value);
+      $node->save();
+      $sandbox['updated']++;
+    }
+
+    $sandbox['progress']++;
+    $sandbox['current_id'] = $node->id();
+  }
+
+  $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+
+  \Drupal::service('logger.factory')->get('update_tasks_projects')->info(
+    'update_9001 progress: @progress',
+    ['@progress' => $sandbox['#finished']]
+  );
+
+  return (string) new TranslatableMarkup('Processed @processed of @total Task node(s), initialized moderation_state on @updated node(s).', [
+    '@processed' => $sandbox['progress'],
+    '@total' => $sandbox['max'],
+    '@updated' => $sandbox['updated'],
+  ]);
+}
+
+/**
+ * Sets field_project_type to kanban on Project nodes where it is empty.
+ */
+function update_tasks_projects_update_9002(&$sandbox): string {
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['updated'] = 0;
+    $sandbox['current_id'] = 0;
+    $sandbox['max'] = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->accessCheck(FALSE)
+      ->count()
+      ->execute();
+  }
+
+  $nids = \Drupal::entityQuery('node')
+    ->condition('type', 'project')
+    ->condition('nid', $sandbox['current_id'], '>')
+    ->sort('nid')
+    ->range(0, 2)
+    ->accessCheck(FALSE)
+    ->execute();
+
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  foreach ($storage->loadMultiple($nids) as $node) {
+    if ($node->hasField('field_project_type') && $node->get('field_project_type')->isEmpty()) {
+      $node->set('field_project_type', 'kanban');
+      $node->save();
+      $sandbox['updated']++;
+    }
+
+    $sandbox['progress']++;
+    $sandbox['current_id'] = $node->id();
+  }
+
+  $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+
+  \Drupal::service('logger.factory')->get('update_tasks_projects')->info(
+    'update_9002 progress: @progress',
+    ['@progress' => $sandbox['#finished']]
+  );
+
+  return (string) new TranslatableMarkup('Processed @processed of @total Project node(s), set field_project_type to kanban on @updated node(s).', [
+    '@processed' => $sandbox['progress'],
+    '@total' => $sandbox['max'],
+    '@updated' => $sandbox['updated'],
+  ]);
+}
