@@ -1,0 +1,8 @@
+name: 'Project'
+type: module
+description: 'Custom routes and tabs for project workflow.'
+core_version_requirement: ^11
+package: DrupalJira
+dependencies:
+  - drupal:node
+  - drupal:content_moderation
