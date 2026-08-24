@@ -1,0 +1,14 @@
+uuid: 487c7dbf-003c-4a6d-9394-e233b3ab1831
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.task_reviewer
+  module:
+    - user
+id: user_add_role_action.task_reviewer
+label: 'Add the Task Reviewer role to the selected user(s)'
+type: user
+plugin: user_add_role_action
+configuration:
+  rid: task_reviewer

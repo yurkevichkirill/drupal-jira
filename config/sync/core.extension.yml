@@ -2,6 +2,7 @@ _core:
   default_config_hash: 4GIX5Esnc_umpXUBj4IIocRX7Mt5fPhm4AgXfE3E56E
 module:
   block: 0
+  content_moderation: 0
   contextual: 0
   datetime: 0
   dblog: 0
@@ -36,6 +37,7 @@ module:
   update: 0
   user: 0
   views_ui: 0
+  workflows: 0
   views: 10
   paragraphs: 11
   minimal: 1000

@@ -1,0 +1,79 @@
+uuid: 41be0eb3-e51c-47a5-8f9a-dc0f5f6e670c
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.task
+  module:
+    - content_moderation
+id: task_status_workflow
+label: 'Task Status Workflow'
+type: content_moderation
+type_settings:
+  states:
+    backlog:
+      label: Backlog
+      weight: 2
+      published: true
+      default_revision: true
+    done:
+      label: Done
+      weight: 5
+      published: true
+      default_revision: true
+    draft:
+      label: Draft
+      weight: 0
+      published: false
+      default_revision: false
+    in_progress:
+      label: 'In Progress'
+      weight: 3
+      published: true
+      default_revision: true
+    published:
+      label: Published
+      weight: 1
+      published: true
+      default_revision: true
+    review:
+      label: Review
+      weight: 4
+      published: true
+      default_revision: true
+  transitions:
+    approve:
+      label: Approve
+      from:
+        - review
+      to: done
+      weight: 0
+    create_new_backlog:
+      label: 'Create New Backlog'
+      from:
+        - backlog
+      to: backlog
+      weight: -3
+    reopen:
+      label: Reopen
+      from:
+        - done
+        - review
+      to: in_progress
+      weight: 1
+    start_progress:
+      label: 'Start Progress'
+      from:
+        - backlog
+      to: in_progress
+      weight: -2
+    submit_review:
+      label: 'Submit Review'
+      from:
+        - in_progress
+      to: review
+      weight: -1
+  entity_types:
+    node:
+      - task
+  default_moderation_state: backlog
