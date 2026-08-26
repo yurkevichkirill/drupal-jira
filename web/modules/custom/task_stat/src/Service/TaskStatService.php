@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace Drupal\task_stat\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\node\NodeInterface;
 
 /**
  * Calculates logged time and estimate figures for tasks and projects.
  */
 final class TaskStatService {
+
+  use StringTranslationTrait;
+
   /**
    * The entity type manager.
    *
@@ -23,9 +29,12 @@ final class TaskStatService {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+   *   The string translation service.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->stringTranslation = $string_translation;
   }
 
   /**
@@ -119,6 +128,27 @@ final class TaskStatService {
       'over_estimate_tasks' => $over_estimate_tasks,
     ];
 
+  }
+
+  /**
+   * Renders how many tasks of a project are done, as a sentence.
+   *
+   * Shared between the project statistics block (full page load) and the
+   * Kanban board's drag-and-drop status update (AJAX), so the two never
+   * report the figures with different wording.
+   *
+   * @param array $stats
+   *   The stats array returned by self::getProjectStats(), or any array with
+   *   'done_tasks' and 'total_tasks' keys.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   A string such as "3 of 5 done".
+   */
+  public function formatTasksSummary(array $stats): TranslatableMarkup {
+    return $this->t('@done of @total done', [
+      '@done' => $stats['done_tasks'],
+      '@total' => $stats['total_tasks'],
+    ]);
   }
 
   /**

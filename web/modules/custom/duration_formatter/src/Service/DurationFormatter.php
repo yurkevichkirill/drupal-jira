@@ -56,6 +56,30 @@ class DurationFormatter {
   }
 
   /**
+   * Renders what is left of an estimate as a human-readable string.
+   *
+   * Shared between the project statistics block and task card (full page
+   * load) and the Kanban board's drag-and-drop status update (AJAX), so a
+   * remaining/overrun figure always reads the same wherever it is shown.
+   *
+   * @param float $remaining
+   *   The estimate minus the hours already logged. A negative value means
+   *   more time was logged than estimated.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The remaining hours, or how far the estimate was overrun.
+   */
+  public function formatRemaining(float $remaining): TranslatableMarkup {
+    if ($remaining < 0) {
+      return $this->t('over estimate by @hours', [
+        '@hours' => $this->format(abs($remaining)),
+      ]);
+    }
+
+    return $this->format($remaining);
+  }
+
+  /**
    * Renders a number of hours as a human-readable string.
    *
    * @param float $hours

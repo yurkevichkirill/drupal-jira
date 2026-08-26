@@ -22,21 +22,21 @@
  * @ingroup themeable
  */
 #}
-<div class="project-stats">
+<div class="project-stats" data-project-stats="{{ project.id }}">
   <h3 class="project-stats__title">{{ name }}</h3>
 
   <dl class="project-stats__list">
     <div class="project-stats__item">
       <dt class="project-stats__label">{{ 'Total estimate'|t }}</dt>
-      <dd class="project-stats__value">{{ total_estimate }}</dd>
+      <dd class="project-stats__value" data-stat="total_estimate">{{ total_estimate }}</dd>
     </div>
     <div class="project-stats__item">
       <dt class="project-stats__label">{{ 'Remaining'|t }}</dt>
-      <dd class="project-stats__value">{{ remaining_estimate }}</dd>
+      <dd class="project-stats__value" data-stat="remaining_estimate">{{ remaining_estimate }}</dd>
     </div>
     <div class="project-stats__item">
       <dt class="project-stats__label">{{ 'Tasks done'|t }}</dt>
-      <dd class="project-stats__value">{{ tasks_summary }}</dd>
+      <dd class="project-stats__value" data-stat="tasks_summary">{{ tasks_summary }}</dd>
     </div>
   </dl>
 </div>
