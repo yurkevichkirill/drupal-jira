@@ -42,6 +42,22 @@ Username: admin
 
 Password: admin
 
+## End-to-end tests
+
+A Playwright E2E suite lives under `tests/e2e/`. Quick start:
+
+```bash
+cp .env.example .env
+npm ci
+npx playwright install --with-deps chromium
+npm run test:seed
+npm run test:e2e
+```
+
+See [`tests/e2e/README.md`](tests/e2e/README.md) for full details: env
+variables, running a single test/project, headed/debug/UI mode, viewing
+traces and the HTML report, and the seed/cleanup fixture strategy.
+
 ## Xdebug
 
 ### Enable Xdebug
