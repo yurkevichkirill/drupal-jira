@@ -1,7 +1,7 @@
 /**
  * @file
- * Project Dashboard: page shell (project header/toolbar) plus the Kanban
- * board itself (status columns holding draggable task cards).
+ * Project Dashboard: page shell (project header) plus the Kanban board
+ * itself (status columns holding draggable task cards).
  *
  * Values are taken from the Figma "Jira Clone (Community)" Project
  * Dashboard frame (node 9:1447, file 1ZjOH1DDrnmBxCd42yJwys) via the
@@ -27,7 +27,6 @@
   --tb-color-grey-900: #202020;
   --tb-color-success: #039855;
   --tb-color-white: #ffffff;
-  --tb-color-page-bg: #f2faff;
 
   --tb-font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
@@ -51,7 +50,7 @@
 
   display: block;
   font-family: var(--tb-font-family);
-  background: var(--tb-color-page-bg);
+  background: var(--tb-color-white);
   padding: var(--tb-space-20);
   border-radius: var(--tb-radius-8);
 }
@@ -100,27 +99,6 @@
 .task-board__project-settings:hover,
 .task-board__project-settings:focus {
   text-decoration: underline;
-}
-
-/* Toolbar: static view tabs, "Board" marked active since it is the only
-   view this theme actually implements. */
-.task-board__toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--tb-space-16);
-  padding: var(--tb-space-10) 0;
-  border-bottom: var(--tb-stroke-1) solid var(--tb-color-grey-200);
-  margin-bottom: var(--tb-space-16);
-}
-
-.task-board__toolbar-tab {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--tb-color-secondary-700);
-}
-
-.task-board__toolbar-tab--active {
-  color: var(--tb-color-primary);
 }
 
 /* Board actions row: exposed search filter + new task link. */

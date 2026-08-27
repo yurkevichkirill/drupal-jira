@@ -6,9 +6,11 @@
  * Renders one column per configured value of field_status instead of the plain
  * list of grouped result sets, so that every status keeps a drop target even
  * when it currently holds no tasks. Also frames the board with the Project
- * Dashboard header/toolbar from the Figma design (project name, static view
- * tabs, exposed search) whenever the board/% argument resolved a real
- * Project node.
+ * Dashboard header from the Figma design (project name, exposed search)
+ * whenever the board/% argument resolved a real Project node. The Figma
+ * toolbar also had Summary/List/Calendar/Timeline tabs alongside Board, but
+ * only the board is actually implemented, so those were dropped instead of
+ * being shipped as dead links.
  *
  * Available variables in addition to the ones documented in the core
  * views-view.html.twig template:
@@ -41,13 +43,6 @@
         {{ 'Project settings'|t }}
       </a>
     </header>
-    <nav class="task-board__toolbar" aria-label="{{ 'Project views'|t }}">
-      <span class="task-board__toolbar-tab">{{ 'Summary'|t }}</span>
-      <span class="task-board__toolbar-tab task-board__toolbar-tab--active" aria-current="page">{{ 'Board'|t }}</span>
-      <span class="task-board__toolbar-tab">{{ 'List'|t }}</span>
-      <span class="task-board__toolbar-tab">{{ 'Calendar'|t }}</span>
-      <span class="task-board__toolbar-tab">{{ 'Timeline'|t }}</span>
-    </nav>
   {% else %}
     {{ title }}
   {% endif %}

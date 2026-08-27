@@ -16,6 +16,8 @@
  * - project: The project node the figures were calculated from. Every value
  *   above is prepared in the preprocess function; the node is only here for
  *   templates that need to link back to the project.
+ * - show_board_link: Whether to render the "Open board" link. FALSE on the
+ *   board page itself, TRUE everywhere else the block appears.
  *
  * @see project_statistics_preprocess_drupaljira_project_stats()
  *
@@ -23,8 +25,6 @@
  */
 #}
 <div class="project-stats" data-project-stats="{{ project.id }}">
-  <h3 class="project-stats__title">{{ name }}</h3>
-
   <dl class="project-stats__list">
     <div class="project-stats__item">
       <dt class="project-stats__label">{{ 'Total estimate'|t }}</dt>
@@ -39,4 +39,18 @@
       <dd class="project-stats__value" data-stat="tasks_summary">{{ tasks_summary }}</dd>
     </div>
   </dl>
+
+  {#
+    The board otherwise has no entry point from a project's or a task's own
+    page: nothing there links to /board/{project}, so reaching it means
+    typing the URL by hand. This block already renders on both pages and
+    already has the project id, so it is the natural place for the link.
+    Suppressed on the board page itself (show_board_link), where it would
+    just link back to the page already open.
+  #}
+  {% if show_board_link %}
+    <a href="{{ path('view.task_board.page_1', {'arg_0': project.id}) }}" class="project-stats__board-link">
+      {{ 'Open board'|t }} &rarr;
+    </a>
+  {% endif %}
 </div>

@@ -30,6 +30,7 @@ function project_statistics_theme($existing, $type, $theme, $path): array {
         'done_tasks' => NULL,
         'total_tasks' => NULL,
         'tasks_summary' => NULL,
+        'show_board_link' => TRUE,
       ],
     ],
     'drupaljira_task_card' => [
@@ -73,6 +74,11 @@ function project_statistics_preprocess_drupaljira_project_stats(array &$variable
   $variables['done_tasks'] = $stats['done_tasks'];
   $variables['total_tasks'] = $stats['total_tasks'];
   $variables['tasks_summary'] = $task_stat->formatTasksSummary($stats);
+
+  // The "Open board" link is only useful as an entry point from a project's
+  // or a task's own page; on the board page itself it would just link back
+  // to the page already open.
+  $variables['show_board_link'] = \Drupal::routeMatch()->getRouteName() !== 'view.task_board.page_1';
 }
 
 /**
