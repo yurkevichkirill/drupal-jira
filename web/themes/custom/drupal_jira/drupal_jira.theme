@@ -62,6 +62,7 @@ function drupal_jira_preprocess_views_view(array &$variables): void {
       $reachable_states[(string) $transition['to']] = TRUE;
     }
   }
+  uasort($states, static fn (array $a, array $b): int => ($a['weight'] ?? 0) <=> ($b['weight'] ?? 0));
 
   $columns = [];
   foreach ($states as $status => $state) {
