@@ -1,3 +1,11 @@
+base:
+  version: 1.x
+  css:
+    theme:
+      css/base.css: {}
+  dependencies:
+    - drupal_jira/task_board_font
+
 task_board:
   version: 1.x
   css:
@@ -10,3 +18,14 @@ task_board:
     - core/once
     - core/drupal.ajax
     - core/drupal.dialog.ajax
+    - drupal_jira/task_board_font
+
+# Pinned Google Fonts stylesheet for the 'Outfit' typeface used throughout
+# the Project Dashboard design (see docs/figma-mcp.md). Loaded as its own
+# library, attached only where task_board depends on it, rather than an
+# unpinned CDN <link> in Twig.
+task_board_font:
+  version: 1.x
+  css:
+    theme:
+      https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap: { type: external, minified: true }

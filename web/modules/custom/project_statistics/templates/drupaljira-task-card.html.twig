@@ -6,6 +6,8 @@
  * Available variables:
  * - status: The label of the status of the task, as configured on
  *   field_status.
+ * - status_key: The machine name of that status, or 'none'. Used only to
+ *   pick a pill color; the label above is what actually renders.
  * - assignee: The display name of the user in field_assignee, or a fallback
  *   label when the task is not assigned.
  * - assignee_initials: Up to two initials of that display name, an empty
@@ -33,14 +35,13 @@
   ]
 %}
 <div class="{{ meta_classes|filter(class => class)|join(' ') }}">
-  {% if is_mine %}
-    <p class="task-card__mine-badge">{{ 'My task'|t }}</p>
-  {% endif %}
+  <div class="task-card__badges">
+    <span class="task-card__status-pill task-card__status-pill--{{ status_key|clean_class }}">{{ status }}</span>
+    {% if is_mine %}
+      <span class="task-card__mine-badge">{{ 'My task'|t }}</span>
+    {% endif %}
+  </div>
   <dl class="task-card__list">
-    <div class="task-card__item">
-      <dt class="task-card__label">{{ 'Status'|t }}</dt>
-      <dd class="task-card__value">{{ status }}</dd>
-    </div>
     <div class="task-card__item">
       <dt class="task-card__label">{{ 'Assignee'|t }}</dt>
       <dd class="task-card__value">

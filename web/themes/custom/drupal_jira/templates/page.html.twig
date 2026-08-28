@@ -1,0 +1,88 @@
+{#
+/**
+ * @file
+ * Page shell: top navbar (Figma "Navbar" component, node 9:1835 in the
+ * "Jira Clone (Community)" file) plus the standard Drupal regions.
+ *
+ * Without this override the theme fell back to core's bare page.html.twig,
+ * so every page showed the unstyled Drupal masthead and a raw bullet-list
+ * Tools/Administration sidebar around the Figma-styled task board. This
+ * replaces the header region with the navbar and gives the sidebar its own
+ * look; region placement (block.block.drupal_jira_*.yml) is unchanged.
+ *
+ * @see drupal_jira_preprocess_page()
+ */
+#}
+{{ attach_library('drupal_jira/base') }}
+<div class="layout-container">
+
+  <header class="site-header">
+    <a href="{{ front_page }}" class="site-header__brand">
+      <img src="{{ base_path ~ directory }}/images/grid-icon.svg" alt="" class="site-header__grid-icon" />
+      <img src="{{ base_path ~ directory }}/images/jira-logo.svg" alt="" class="site-header__logo-mark" />
+      <span class="site-header__wordmark">{{ 'Jira'|t }}</span>
+    </a>
+
+    {#
+      Not system.admin_content ("/admin/content"): that route requires the
+      'access content overview' permission, which only admin-type roles
+      hold, so a regular authenticated user clicking either link here got
+      "Access Denied". The 'projects'/'tasks' views below are gated by the
+      much more common 'access content' permission instead.
+      @see views.view.projects.yml, views.view.tasks.yml
+    #}
+    <nav class="site-header__nav" aria-label="{{ 'Main navigation'|t }}">
+      <a href="{{ path('view.projects.page_1') }}" class="site-header__nav-link">{{ 'Projects'|t }}</a>
+      <a href="{{ path('view.tasks.page_1') }}" class="site-header__nav-link">{{ 'Tasks'|t }}</a>
+    </nav>
+
+    <div class="site-header__actions">
+      {% if logged_in %}
+        <a href="{{ path('user.page') }}" class="site-header__avatar" title="{{ site_user_name }}">{{ site_user_initial }}</a>
+      {% else %}
+        <a href="{{ path('user.login') }}" class="site-header__nav-link">{{ 'Log in'|t }}</a>
+      {% endif %}
+    </div>
+  </header>
+
+  {{ page.primary_menu }}
+  {{ page.secondary_menu }}
+
+  {% if page.breadcrumb %}
+    <div class="site-breadcrumb">
+      {{ page.breadcrumb }}
+    </div>
+  {% endif %}
+
+  {{ page.highlighted }}
+
+  {{ page.help }}
+
+  <main>
+    <a id="main-content" tabindex="-1"></a>{# link is in html.html.twig #}
+
+    <div class="layout-content">
+      {{ page.content }}
+    </div>{# /.layout-content #}
+
+    {% if page.sidebar_first %}
+      <aside class="layout-sidebar-first site-sidebar">
+        {{ page.sidebar_first }}
+      </aside>
+    {% endif %}
+
+    {% if page.sidebar_second %}
+      <aside class="layout-sidebar-second">
+        {{ page.sidebar_second }}
+      </aside>
+    {% endif %}
+
+  </main>
+
+  {% if page.footer %}
+    <footer class="site-footer">
+      {{ page.footer }}
+    </footer>
+  {% endif %}
+
+</div>{# /.layout-container #}

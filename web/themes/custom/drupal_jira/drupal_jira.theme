@@ -8,8 +8,24 @@
 declare(strict_types=1);
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Cache\Cache;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 use Drupal\paragraphs\ParagraphInterface;
+
+/**
+ * Implements hook_preprocess_HOOK() for the page template.
+ *
+ * Supplies the account name/initial the navbar shows for a logged-in user;
+ * core's page preprocess only exposes the boolean 'logged_in'.
+ */
+function drupal_jira_preprocess_page(array &$variables): void {
+  $account = \Drupal::currentUser();
+  $name = $account->getAccountName();
+  $variables['site_user_name'] = $name;
+  $variables['site_user_initial'] = $name === '' ? '' : mb_strtoupper(mb_substr($name, 0, 1));
+}
 
 /**
  * Implements hook_preprocess_HOOK() for views templates.
@@ -51,6 +67,30 @@ function drupal_jira_preprocess_views_view(array &$variables): void {
     ];
   }
   $variables['board_columns'] = $columns;
+
+  // The board page (board/%) validates its argument against a Project node,
+  // which the header needs to show the project name/icon; the default
+  // display has no argument to resolve at all.
+  $variables['board_project'] = NULL;
+  $argument_handlers = $variables['view']->argument ?? [];
+  if (isset($argument_handlers['field_project_target_id'])) {
+    $project = $argument_handlers['field_project_target_id']->getValue();
+    $node = $project !== NULL ? Node::load($project) : NULL;
+    if ($node instanceof NodeInterface && $node->bundle() === 'project') {
+      $variables['board_project'] = $node;
+      // The project node is read outside the view's own query, so its cache
+      // tags have to be merged in by hand or a title/status edit on the
+      // project would not bust the board's render cache. Setting this on
+      // $variables['#cache'] (rather than $variables['view']->element,
+      // which the render system never re-reads after this hook runs) is
+      // what lets ThemeManager::render() bubble it into the element being
+      // themed.
+      $variables['#cache']['tags'] = Cache::mergeTags(
+        $variables['#cache']['tags'] ?? [],
+        $node->getCacheTags(),
+      );
+    }
+  }
 }
 
 /**

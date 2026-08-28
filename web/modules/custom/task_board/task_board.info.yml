@@ -6,3 +6,6 @@ core_version_requirement: ^11
 dependencies:
   - drupal:node
   - drupal:views
+  - drupal:content_moderation
+  - task_stat:task_stat
+  - duration_formatter:duration_formatter

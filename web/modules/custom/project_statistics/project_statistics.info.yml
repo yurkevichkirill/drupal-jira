@@ -9,3 +9,4 @@ dependencies:
   - drupal:user
   - task_stat:task_stat
   - time_tracking:time_tracking
+  - duration_formatter:duration_formatter

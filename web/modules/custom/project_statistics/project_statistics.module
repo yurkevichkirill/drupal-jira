@@ -30,6 +30,7 @@ function project_statistics_theme($existing, $type, $theme, $path): array {
         'done_tasks' => NULL,
         'total_tasks' => NULL,
         'tasks_summary' => NULL,
+        'show_board_link' => TRUE,
       ],
     ],
     'drupaljira_task_card' => [
@@ -40,6 +41,7 @@ function project_statistics_theme($existing, $type, $theme, $path): array {
         'task' => NULL,
         'is_mine' => FALSE,
         'status' => NULL,
+        'status_key' => NULL,
         'assignee' => NULL,
         'assignee_initials' => NULL,
         'remaining_estimate' => NULL,
@@ -64,15 +66,19 @@ function project_statistics_preprocess_drupaljira_project_stats(array &$variable
   $task_stat = \Drupal::service('drupaljira.task_stat');
   $stats = $task_stat->getProjectStats($project);
 
+  $duration_formatter = \Drupal::service('drupaljira.duration_formatter');
+
   $variables['name'] = $project->getTitle();
-  $variables['total_estimate'] = \Drupal::service('drupaljira.duration_formatter')->format((float) $stats['total_estimate']);
-  $variables['remaining_estimate'] = _project_statistics_format_remaining((float) $stats['remaining']);
+  $variables['total_estimate'] = $duration_formatter->format((float) $stats['total_estimate']);
+  $variables['remaining_estimate'] = $duration_formatter->formatRemaining((float) $stats['remaining']);
   $variables['done_tasks'] = $stats['done_tasks'];
   $variables['total_tasks'] = $stats['total_tasks'];
-  $variables['tasks_summary'] = t('@done of @total done', [
-    '@done' => $stats['done_tasks'],
-    '@total' => $stats['total_tasks'],
-  ]);
+  $variables['tasks_summary'] = $task_stat->formatTasksSummary($stats);
+
+  // The "Open board" link is only useful as an entry point from a project's
+  // or a task's own page; on the board page itself it would just link back
+  // to the page already open.
+  $variables['show_board_link'] = \Drupal::routeMatch()->getRouteName() !== 'view.task_board.page_1';
 }
 
 /**
@@ -94,9 +100,11 @@ function project_statistics_preprocess_drupaljira_task_card(array &$variables): 
   $name = $assignee instanceof UserInterface ? $assignee->getDisplayName() : NULL;
   $variables['is_mine'] = _project_statistics_is_my_task($task);
   $variables['status'] = _project_statistics_status_label($task);
+  $variables['status_key'] = _project_statistics_status_key($task);
   $variables['assignee'] = $name ?? t('Unassigned');
   $variables['assignee_initials'] = $name === NULL ? '' : _project_statistics_initials($name);
-  $variables['remaining_estimate'] = _project_statistics_format_remaining($task_stat->getRemainingEstimate($task));
+  $variables['remaining_estimate'] = \Drupal::service('drupaljira.duration_formatter')
+    ->formatRemaining($task_stat->getRemainingEstimate($task));
 }
 
 /**
@@ -144,17 +152,34 @@ function project_statistics_preprocess_node(array &$variables): void {
  *   no label for it, a fallback string when the task has no status at all.
  */
 function _project_statistics_status_label(NodeInterface $task): string|TranslatableMarkup {
-  if (!$task->hasField('field_status') || $task->get('field_status')->isEmpty()) {
+  $value = _project_statistics_status_key($task);
+  if ($value === 'none') {
     return t('No status');
   }
 
-  $value = (string) $task->get('field_status')->value;
   $allowed_values = (array) $task->get('field_status')
     ->getFieldDefinition()
     ->getFieldStorageDefinition()
     ->getSetting('allowed_values');
 
   return $allowed_values[$value] ?? $value;
+}
+
+/**
+ * Returns the raw machine name of the status of a task.
+ *
+ * @param \Drupal\node\NodeInterface $task
+ *   The task the status is read from.
+ *
+ * @return string
+ *   The stored value of field_status, or 'none' when the task has no status.
+ */
+function _project_statistics_status_key(NodeInterface $task): string {
+  if (!$task->hasField('field_status') || $task->get('field_status')->isEmpty()) {
+    return 'none';
+  }
+
+  return (string) $task->get('field_status')->value;
 }
 
 /**
@@ -175,26 +200,6 @@ function _project_statistics_initials(string $name): string {
   }
 
   return $initials;
-}
-
-/**
- * Renders what is left of an estimate as a human-readable string.
- *
- * @param float $remaining
- *   The estimate minus the hours already logged. A negative value means more
- *   time was logged than estimated.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup
- *   The remaining hours, or how far the estimate was overrun.
- */
-function _project_statistics_format_remaining(float $remaining): TranslatableMarkup {
-  if ($remaining < 0) {
-    return t('over estimate by @hours', [
-      '@hours' => \Drupal::service('drupaljira.duration_formatter')->format(abs($remaining)),
-    ]);
-  }
-
-  return \Drupal::service('drupaljira.duration_formatter')->format($remaining);
 }
 
 /**

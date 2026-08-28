@@ -1,0 +1,491 @@
+/**
+ * @file
+ * Page shell: top navbar and sidebar chrome that wraps every page.
+ *
+ * Colors/spacing mirror the Figma "Jira Clone (Community)" Navbar/Sidebar
+ * components (file 1ZjOH1DDrnmBxCd42yJwys, nodes 9:1835 and 9:2004), read
+ * via the Figma MCP get_design_context tool. Kept as its own set of
+ * custom properties (rather than reusing the .task-board-scoped --tb-*
+ * tokens from task-board.css) because this stylesheet loads on every page,
+ * including ones the task board library never attaches to.
+ */
+
+:root {
+  --site-color-primary: #0a65e4;
+  --site-color-secondary-700: #5b5772;
+  --site-color-secondary-1000: #140f36;
+  --site-color-grey-100: #ececec;
+  --site-color-grey-600: #7e7e7e;
+  --site-color-white: #ffffff;
+  --site-font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--site-font-family);
+  color: var(--site-color-secondary-1000);
+  background: var(--site-color-white);
+}
+
+/* Top navbar: brand mark, primary links, account. */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 22px;
+  background: var(--site-color-white);
+  border-bottom: 1px solid var(--site-color-grey-100);
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.site-header__grid-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.site-header__logo-mark {
+  width: 24px;
+  height: 24px;
+}
+
+.site-header__wordmark {
+  font-size: 18px;
+  color: var(--site-color-secondary-1000);
+}
+
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.site-header__nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--site-color-secondary-700);
+  text-decoration: none;
+}
+
+.site-header__nav-link:hover,
+.site-header__nav-link:focus {
+  color: var(--site-color-primary);
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-header__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: var(--site-color-secondary-1000);
+  color: var(--site-color-white);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Single horizontal margin for everything in the content region (page
+   title, block labels, project stats, task/board content) so they all line
+   up on the same left/right edge instead of each component carrying its
+   own, inconsistent padding. */
+.layout-content {
+  padding: 0 22px 22px;
+}
+
+.layout-content > h1,
+.layout-content > h2 {
+  margin: 20px 0 0;
+}
+
+/* Primary/secondary local task tabs (View/Edit/Delete/Revisions on a node,
+   Log in/Reset your password on the login form, ...): Stark's block.html.twig
+   renders these with no wrapper class at all, just the block's own id, so
+   without this they show up as a raw bullet list. */
+#block-drupal-jira-local-tasks ul,
+#block-drupal-jira-local-actions ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  border-bottom: 1px solid var(--site-color-grey-100);
+}
+
+#block-drupal-jira-local-tasks a,
+#block-drupal-jira-local-actions a {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--site-color-secondary-700);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+#block-drupal-jira-local-tasks a:hover,
+#block-drupal-jira-local-actions a:hover {
+  color: var(--site-color-primary);
+}
+
+#block-drupal-jira-local-tasks a.is-active {
+  color: var(--site-color-primary);
+  border-bottom-color: var(--site-color-primary);
+}
+
+/* Generic form controls (login, password reset, node add/edit, ...): core
+   only ships unstyled inputs and a plain grey button, the one part of every
+   form-based page that had no relation to the rest of the redesign yet. */
+/* Form item spacing (login, password reset, node add/edit, ...): core's
+   .form-item wrapper carries no margin of its own, so label/input pairs and
+   the actions row butted straight up against each other with no breathing
+   room at all. */
+.form-item {
+  margin: 0 0 16px;
+}
+
+.form-item label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--site-color-secondary-1000);
+}
+
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-text,
+.form-email,
+.form-tel,
+.form-url,
+.form-search,
+.form-password,
+.form-select,
+.form-textarea {
+  padding: 8px 12px;
+  font-family: var(--site-font-family);
+  font-size: 14px;
+  color: var(--site-color-secondary-1000);
+  background: var(--site-color-white);
+  border: 1px solid var(--site-color-grey-100);
+  border-radius: 6px;
+}
+
+.form-text:focus,
+.form-email:focus,
+.form-tel:focus,
+.form-url:focus,
+.form-search:focus,
+.form-password:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: 2px solid var(--site-color-primary);
+  outline-offset: 1px;
+}
+
+.button {
+  padding: 8px 20px;
+  font-family: var(--site-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--site-color-white);
+  background: var(--site-color-primary);
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button:hover,
+.button:focus {
+  background: #084fb3;
+}
+
+.button--danger {
+  background: #c62828;
+}
+
+/* Node add/edit form: core always outputs "Revision information" (vertical
+   tabs), the moderation "Save as" state select, and the Save/Preview buttons
+   BEFORE the content fields in the DOM (Title, then these, then Body,
+   Project, Status...). Core themes reposition them with a two-column
+   admin layout; this theme has none, so they rendered as a half-collapsed
+   box sitting above the fields it belongs below. Flexbox `order` moves them
+   to the end, after every field, without touching the DOM. */
+form.node-form {
+  display: flex;
+  flex-direction: column;
+}
+
+form.node-form .form-type-vertical-tabs {
+  order: 90;
+  margin-top: 20px;
+}
+
+form.node-form .entity-content-form-footer {
+  order: 95;
+}
+
+form.node-form .form-actions {
+  order: 100;
+}
+
+/* The vertical tabs widget itself (core's JS turns the "Revision
+   information" <details> into this menu+pane pair): styled as a plain,
+   low-emphasis card instead of the unstyled nested boxes core ships. */
+.vertical-tabs {
+  /* Overrides core's own 15em left margin (misc/vertical-tabs.css), which
+     reserves space for the menu it expects to float there; the menu is
+     unfloated below into a plain stacked list instead, so that space is
+     no longer needed. */
+  margin: 0;
+  padding: 16px;
+  background: var(--site-color-white);
+  border: 1px solid var(--site-color-grey-100);
+  border-radius: 8px;
+}
+
+.vertical-tabs__menu {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.vertical-tabs__menu-item a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--site-color-secondary-1000);
+  text-decoration: none;
+}
+
+.vertical-tabs__menu-item-summary {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--site-color-grey-600);
+}
+
+.vertical-tabs__pane {
+  border: 0;
+  padding: 0;
+}
+
+.vertical-tabs__pane > summary {
+  display: none;
+}
+
+.site-breadcrumb {
+  padding: 8px 22px 0;
+  font-size: 13px;
+  color: var(--site-color-grey-600);
+}
+
+/* Sidebar: Tools/Administration menus, restyled as a clean nav card instead
+   of raw <ul> bullet lists left over from the default Stark rendering. */
+.site-sidebar {
+  padding: 20px;
+  border-left: 1px solid var(--site-color-grey-100);
+}
+
+.site-sidebar nav + nav {
+  margin-top: 20px;
+}
+
+.site-sidebar h2 {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--site-color-grey-600);
+  margin: 0 0 8px;
+}
+
+.site-sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-sidebar li {
+  margin: 0;
+}
+
+.site-sidebar a {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--site-color-secondary-700);
+  text-decoration: none;
+}
+
+.site-sidebar a:hover,
+.site-sidebar a:focus {
+  background: var(--site-color-grey-100);
+  color: var(--site-color-primary);
+}
+
+/* Project statistics block (project_statistics module): a row of stat cards,
+   styled after the Figma "Summary Card" component (node 14:6572 in the
+   "Jira Clone (Community)" file). */
+.project-stats {
+  padding: 20px 0 0;
+}
+
+.project-stats__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0;
+}
+
+.project-stats__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  background: var(--site-color-white);
+  border: 1px solid var(--site-color-grey-100);
+  border-radius: 8px;
+  box-shadow: 0 1px 4.5px rgba(0, 0, 0, 0.09);
+  min-width: 160px;
+}
+
+.project-stats__label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--site-color-grey-600);
+}
+
+.project-stats__value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--site-color-secondary-1000);
+}
+
+.project-stats__board-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--site-color-primary);
+  text-decoration: none;
+}
+
+.project-stats__board-link:hover,
+.project-stats__board-link:focus {
+  text-decoration: underline;
+}
+
+/* Task full view (node--task--full.html.twig): the same card language as
+   .project-stats__item for the short reference fields, plus a plain
+   readable column for body text and attachments. */
+.task-detail {
+  display: block;
+  padding: 20px 0;
+}
+
+.task-detail__meta {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--site-color-grey-600);
+}
+
+.task-detail__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.task-detail__field {
+  min-width: 160px;
+  padding: 16px 20px;
+  background: var(--site-color-white);
+  border: 1px solid var(--site-color-grey-100);
+  border-radius: 8px;
+  box-shadow: 0 1px 4.5px rgba(0, 0, 0, 0.09);
+}
+
+.task-detail__field .field__label {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--site-color-grey-600);
+}
+
+.task-detail__field .field__item,
+.task-detail__field > div:last-child {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--site-color-secondary-1000);
+}
+
+.task-detail__body {
+  max-width: 720px;
+  margin-bottom: 24px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--site-color-secondary-1000);
+}
+
+.task-detail__body .field__label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--site-color-grey-600);
+}
+
+.task-detail__attachments .field__label {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--site-color-grey-600);
+}
+
+.task-detail__attachments .field__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.task-detail__attachments .field__item {
+  max-width: 320px;
+}
+
+.task-detail__attachments img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--site-color-grey-100);
+}
+
+.site-footer {
+  padding: 16px 22px;
+  font-size: 13px;
+  color: var(--site-color-grey-600);
+}

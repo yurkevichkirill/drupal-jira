@@ -1,0 +1,49 @@
+{#
+/**
+ * @file
+ * Full view of a Task node.
+ *
+ * Overrides core's node.html.twig, which prints {{ content }} as one plain
+ * stack of default field markup (Project/Status/Assignee/Estimate rendered
+ * as bare "label \n value" lines, then body text, then a full-size
+ * attachment image with no layout at all) — the only unstyled corner left
+ * once the board and its Project statistics card were redesigned.
+ *
+ * Field order still comes from core.entity_view_display.node.task.full.yml;
+ * this only regroups the same field render arrays into a card grid for the
+ * short reference fields, plus a decoupled body/attachments section.
+ *
+ * @see node.html.twig
+ */
+#}
+{{ attach_library('drupal_jira/base') }}
+<article{{ attributes.addClass('task-detail') }}>
+
+  {% if display_submitted %}
+    <div class="task-detail__meta">
+      {% trans %}Submitted by {{ author_name }} on {{ date }}{% endtrans %}
+    </div>
+  {% endif %}
+
+  {% set reference_fields = ['field_project', 'field_status', 'field_assignee', 'field_estimate'] %}
+  {% if content.field_project or content.field_status or content.field_assignee or content.field_estimate %}
+    <div class="task-detail__summary">
+      {% for field_name in reference_fields %}
+        {% if content[field_name] %}
+          <div class="task-detail__field">{{ content[field_name] }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if content.field_body %}
+    <div class="task-detail__body">{{ content.field_body }}</div>
+  {% endif %}
+
+  {% if content.field_attachments %}
+    <div class="task-detail__attachments">{{ content.field_attachments }}</div>
+  {% endif %}
+
+  {{ content|without('field_project', 'field_status', 'field_assignee', 'field_estimate', 'field_body', 'field_attachments') }}
+
+</article>

@@ -5,12 +5,20 @@
  *
  * Renders one column per configured value of field_status instead of the plain
  * list of grouped result sets, so that every status keeps a drop target even
- * when it currently holds no tasks.
+ * when it currently holds no tasks. Also frames the board with the Project
+ * Dashboard header from the Figma design (project name, exposed search)
+ * whenever the board/% argument resolved a real Project node. The Figma
+ * toolbar also had Summary/List/Calendar/Timeline tabs alongside Board, but
+ * only the board is actually implemented, so those were dropped instead of
+ * being shipped as dead links.
  *
  * Available variables in addition to the ones documented in the core
  * views-view.html.twig template:
  * - board_columns: List of columns, each with the keys 'key' (the machine name
  *   of the status), 'label' and 'rows' (the rendered task teasers).
+ * - board_project: The Project node the board/% argument resolved, or NULL
+ *   on the ungrouped default display (e.g. embedded elsewhere without an
+ *   argument).
  *
  * @see drupal_jira_preprocess_views_view()
  * @see template_preprocess_views_view()
@@ -25,7 +33,19 @@
 %}
 <div{{ attributes.addClass(classes) }}>
   {{ title_prefix }}
-  {{ title }}
+  {% if board_project %}
+    <header class="task-board__project-header">
+      <div class="task-board__project-info">
+        <span class="task-board__project-icon" aria-hidden="true">{{ board_project.label|slice(0, 1) }}</span>
+        <h1 class="task-board__project-name">{{ board_project.label }}</h1>
+      </div>
+      <a href="{{ path('entity.node.edit_form', {'node': board_project.id}) }}" class="task-board__project-settings">
+        {{ 'Project settings'|t }}
+      </a>
+    </header>
+  {% else %}
+    {{ title }}
+  {% endif %}
   {{ title_suffix }}
 
   {% if header %}
@@ -34,19 +54,26 @@
     </header>
   {% endif %}
 
-  {{ exposed }}
+  <div class="task-board__actions">
+    <div class="task-board__search">
+      {{ exposed }}
+    </div>
+    <a href="{{ path('node.add', {'node_type': 'task'}) }}" class="task-board__new-task">{{ '+ New task'|t }}</a>
+  </div>
   {{ attachment_before }}
 
   <div class="task-board__columns">
     {% for column in board_columns %}
       <div class="task-board__column" data-status="{{ column.key }}">
         <h2 class="task-board__column-title">
-          {{ column.label }}
+          <span class="task-board__column-pill task-board__column-pill--{{ column.key|clean_class }}">{{ column.label }}</span>
           <span class="task-board__count">{{ column.rows|length }}</span>
         </h2>
         <div class="task-board__cards">
           {% for row in column.rows %}
             {{ row }}
+          {% else %}
+            <p class="task-board__empty">{{ 'No tasks yet.'|t }}</p>
           {% endfor %}
         </div>
       </div>

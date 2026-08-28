@@ -1,4 +1,4 @@
 services:
   drupaljira.task_stat:
     class: Drupal\task_stat\Service\TaskStatService
-    arguments: ['@entity_type.manager']
+    arguments: ['@entity_type.manager', '@string_translation']

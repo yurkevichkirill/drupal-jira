@@ -50,6 +50,42 @@
     if (!response.ok) {
       throw new Error(`Status update failed with ${response.status}.`);
     }
+    return response.json();
+  };
+
+  /**
+   * Patches the project statistics block with figures from the server.
+   *
+   * The block (total estimate, remaining, tasks done) is rendered separately
+   * from the board, from the database, so a drag-and-drop move has to push its
+   * own copy of the recalculated figures into the DOM instead of relying on
+   * the block to re-render itself.
+   *
+   * @param {object|null} stats
+   *   The 'project_stats' payload of the status update response, or null when
+   *   the moved task has no project.
+   */
+  const refreshProjectStats = (stats) => {
+    if (!stats) {
+      return;
+    }
+    const block = document.querySelector(
+      `[data-project-stats="${stats.project_id}"]`,
+    );
+    if (!block) {
+      return;
+    }
+    const values = {
+      total_estimate: stats.total_estimate_formatted,
+      remaining_estimate: stats.remaining_estimate_formatted,
+      tasks_summary: stats.tasks_summary,
+    };
+    Object.keys(values).forEach((key) => {
+      const value = block.querySelector(`[data-stat="${key}"]`);
+      if (value) {
+        value.textContent = values[key];
+      }
+    });
   };
 
   /**
@@ -65,6 +101,80 @@
         counter.textContent = column.querySelectorAll('.task-card').length;
       }
     });
+  };
+
+  /**
+   * Shows or hides the "No tasks yet" placeholder of a column's card list.
+   *
+   * @param {Element} cardsContainer
+   *   The .task-board__cards element the card was moved into or out of.
+   */
+  const refreshEmptyState = (cardsContainer) => {
+    let empty = cardsContainer.querySelector('.task-board__empty');
+    if (cardsContainer.querySelector('.task-card')) {
+      if (empty) {
+        empty.remove();
+      }
+      return;
+    }
+    if (!empty) {
+      empty = document.createElement('p');
+      empty.className = 'task-board__empty';
+      empty.textContent = Drupal.t('No tasks yet.');
+      cardsContainer.appendChild(empty);
+    }
+  };
+
+  /**
+   * Finds the element to move when a card is dropped into another column.
+   *
+   * Views wraps every row in its own markup (a ".views-field-rendered-entity"
+   * div and a ".field-content" span) before the ".task-card" article, so
+   * relocating the card element alone leaves that wrapper behind as an empty
+   * husk exactly where the card used to sit.
+   *
+   * @param {Element} card
+   *   The task card that was dropped.
+   *
+   * @return {Element}
+   *   The direct child of .task-board__cards that contains the card.
+   */
+  const findRow = (card) => {
+    let row = card;
+    while (row.parentElement && !row.parentElement.classList.contains('task-board__cards')) {
+      row = row.parentElement;
+    }
+    return row;
+  };
+
+  /**
+   * Updates the status pill shown on a card after it changes column.
+   *
+   * @param {Element} card
+   *   The task card that was moved.
+   * @param {Element} column
+   *   The column the card was dropped into.
+   */
+  const refreshCardStatus = (card, column) => {
+    const pill = card.querySelector('.task-card__status-pill');
+    const columnPill = column.querySelector('.task-board__column-pill');
+    if (!pill || !columnPill) {
+      return;
+    }
+    // Reuse the modifier suffix Twig already built with the `clean_class`
+    // filter (e.g. "in-progress" for the "in_progress" status value) instead
+    // of rebuilding it from column.dataset.status, which is the raw machine
+    // name and would produce a class ("--in_progress") the CSS never defines.
+    const modifierClass = Array.from(columnPill.classList).find(
+      (className) => className.startsWith('task-board__column-pill--'),
+    );
+    const suffix = modifierClass
+      ? modifierClass.replace('task-board__column-pill--', '')
+      : '';
+    pill.className = ['task-card__status-pill', suffix && `task-card__status-pill--${suffix}`]
+      .filter(Boolean)
+      .join(' ');
+    pill.textContent = columnPill.textContent;
   };
 
   Drupal.behaviors.taskBoard = {
@@ -106,21 +216,30 @@
               return;
             }
 
-            const origin = card.parentNode;
+            const row = findRow(card);
+            const origin = row.parentElement;
+            const originColumn = origin.closest('.task-board__column');
             const target = column.querySelector('.task-board__cards');
             if (target === origin) {
               return;
             }
 
-            target.appendChild(card);
+            target.appendChild(row);
             refreshCounts(board);
+            refreshEmptyState(origin);
+            refreshEmptyState(target);
+            refreshCardStatus(card, column);
 
             try {
-              await saveStatus(nid, column.dataset.status);
+              const result = await saveStatus(nid, column.dataset.status);
+              refreshProjectStats(result.project_stats);
               Drupal.announce(Drupal.t('Task status updated.'));
             } catch (error) {
-              origin.appendChild(card);
+              origin.appendChild(row);
               refreshCounts(board);
+              refreshEmptyState(origin);
+              refreshEmptyState(target);
+              refreshCardStatus(card, originColumn);
               Drupal.announce(
                 Drupal.t('The task status could not be saved.'),
                 'assertive',
