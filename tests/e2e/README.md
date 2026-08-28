@@ -110,6 +110,25 @@ committed). The `admin` and `user` projects declare `dependencies: ['setup']`
 and load the corresponding storage state; the `anonymous` project uses an
 empty storage state so those tests exercise a logged-out visitor.
 
+## Critical journey coverage (Task 9.2)
+
+Beyond the auth/permission smoke tests, `tests/e2e/TEST_MATRIX.md` documents
+the full set of critical Project/Task journeys, which are covered and which
+are deliberately left to Drupal core/manual review, and why:
+
+- `project-management.admin.spec.ts` — Project creation/editing, Kanban → Scrum.
+- `task-management.user.spec.ts` — Task creation/editing, required-Project validation.
+- `task-board.user.spec.ts` / `task-board.admin.spec.ts` — Kanban board columns and
+  Content Moderation transitions (drag-and-drop), including the permission
+  boundary between a plain authenticated user and an admin/reviewer.
+- `media-attachments.admin.spec.ts` — Media Library image + PDF attachments.
+- `time-tracking.user.spec.ts` — Logging time and its effect on displayed estimates.
+
+`tests/e2e/helpers.ts` holds the shared fixtures/utilities these specs use
+(unique title generation, an admin-context Project fixture creator, the
+entity-reference-autocomplete driver, the Media Library upload flow, and the
+native HTML5 drag-and-drop simulator the Kanban board requires).
+
 ## Test data / domain notes
 
 - **Project** / **Task** nodes, **Media** (image/document), and **TimeLog**
