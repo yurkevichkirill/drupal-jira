@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\Cache;
-use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\paragraphs\ParagraphInterface;
@@ -31,7 +30,8 @@ function drupal_jira_preprocess_page(array &$variables): void {
  * Implements hook_preprocess_HOOK() for views templates.
  *
  * Turns the grouped result sets of the Kanban board into a fixed list of
- * columns, one per configured value of field_status. Views only renders groups
+ * columns, one per task workflow state used by a transition.
+ * Views only renders groups
  * that contain results, and in the order the results happen to arrive, so
  * without this the board would lose a column as soon as a status is empty and
  * cards could no longer be dropped into it.
@@ -53,13 +53,22 @@ function drupal_jira_preprocess_views_view(array &$variables): void {
     }
   }
 
-  // The setting is stored as a list of value/label pairs but is handed back as
-  // a flat machine name => label map, in the configured order.
-  $field_storage = FieldStorageConfig::loadByName('node', 'field_status');
-  $allowed_values = $field_storage === NULL ? [] : (array) $field_storage->getSetting('allowed_values');
+  $workflow = \Drupal::config('workflows.workflow.task_status_workflow');
+  $states = (array) $workflow->get('type_settings.states');
+  $transitions = (array) $workflow->get('type_settings.transitions');
+  $reachable_states = [];
+  foreach ($transitions as $transition) {
+    if (isset($transition['to'])) {
+      $reachable_states[(string) $transition['to']] = TRUE;
+    }
+  }
 
   $columns = [];
-  foreach ($allowed_values as $status => $label) {
+  foreach ($states as $status => $state) {
+    if (!isset($reachable_states[$status])) {
+      continue;
+    }
+    $label = (string) ($state['label'] ?? $status);
     $columns[] = [
       'key' => (string) $status,
       'label' => $label,

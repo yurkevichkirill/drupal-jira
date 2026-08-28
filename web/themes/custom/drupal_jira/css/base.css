@@ -167,6 +167,23 @@ body {
   color: var(--site-color-secondary-1000);
 }
 
+/* Checkbox/radio items (e.g. "I am logging more than estimated" on the log
+   time form): the generic .form-item label rule above is written for a
+   label sitting above its input, so applied as-is here it drops the label
+   onto its own line below the checkbox instead of next to it. */
+.form-item.form-type-checkbox,
+.form-item.form-type-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-item.form-type-checkbox label,
+.form-item.form-type-radio label {
+  display: inline;
+  margin-bottom: 0;
+}
+
 .form-actions {
   margin-top: 20px;
   display: flex;
@@ -266,6 +283,12 @@ form.node-form .form-actions {
 }
 
 .vertical-tabs__menu {
+  /* Core floats this at 15em wide (misc/vertical-tabs.css) expecting the
+     .vertical-tabs left margin above to reserve that space; since that
+     margin is zeroed out here, the float has to be cancelled too, or the
+     menu overlaps .vertical-tabs__pane instead of stacking above it. */
+  float: none;
+  width: auto;
   list-style: none;
   margin: 0 0 12px;
   padding: 0;

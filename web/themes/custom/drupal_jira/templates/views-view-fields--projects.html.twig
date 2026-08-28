@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * One project card: initial-letter icon (same treatment as the Kanban
+ * board's project header, task-board__project-icon) plus title and a
+ * trimmed body excerpt. The title links into the project node, which is
+ * where the project_statistics block and the "Open board" link live.
+ *
+ * @see views-view--projects.html.twig
+ * @see template_preprocess_views_view_fields()
+ */
+#}
+{% set project_label = row._entity.label %}
+<article class="project-card">
+  <div class="project-card__icon" aria-hidden="true">{{ project_label|slice(0, 1) }}</div>
+  <div class="project-card__body">
+    <h3 class="project-card__title">{{ fields.title.content }}</h3>
+    {% if fields.field_body.content %}
+      <div class="project-card__excerpt">{{ fields.field_body.content }}</div>
+    {% endif %}
+  </div>
+</article>

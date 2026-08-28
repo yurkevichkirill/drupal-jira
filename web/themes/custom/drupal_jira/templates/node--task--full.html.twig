@@ -25,8 +25,8 @@
     </div>
   {% endif %}
 
-  {% set reference_fields = ['field_project', 'field_status', 'field_assignee', 'field_estimate'] %}
-  {% if content.field_project or content.field_status or content.field_assignee or content.field_estimate %}
+  {% set reference_fields = ['field_project', 'field_assignee', 'field_estimate'] %}
+  {% if content.field_project or content.field_assignee or content.field_estimate %}
     <div class="task-detail__summary">
       {% for field_name in reference_fields %}
         {% if content[field_name] %}
@@ -44,6 +44,6 @@
     <div class="task-detail__attachments">{{ content.field_attachments }}</div>
   {% endif %}
 
-  {{ content|without('field_project', 'field_status', 'field_assignee', 'field_estimate', 'field_body', 'field_attachments') }}
+  {{ content|without('field_project', 'field_assignee', 'field_estimate', 'field_body', 'field_attachments') }}
 
 </article>

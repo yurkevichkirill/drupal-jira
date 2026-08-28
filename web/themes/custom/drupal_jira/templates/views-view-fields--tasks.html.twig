@@ -1,0 +1,34 @@
+{#
+/**
+ * @file
+ * One row of the `tasks` list: title/project on the left, status pill,
+ * assignee and estimate on the right — same field set as a Kanban card
+ * (node--task--teaser.html.twig) but laid out for a scannable list instead
+ * of a draggable column card.
+ *
+ * @see views-view--tasks.html.twig
+ * @see template_preprocess_views_view_fields()
+ */
+#}
+{% set status_value = row._entity.moderation_state.value %}
+<article class="task-row">
+  <div class="task-row__main">
+    <h3 class="task-row__title">{{ fields.title.content }}</h3>
+    {% if fields.field_project.content %}
+      <div class="task-row__project">{{ 'Project:'|t }} {{ fields.field_project.content }}</div>
+    {% endif %}
+  </div>
+  <div class="task-row__meta">
+    {% if fields.moderation_state.content %}
+      <span class="status-pill status-pill--{{ status_value|clean_class }}">{{ fields.moderation_state.content }}</span>
+    {% endif %}
+    {% if fields.field_assignee.content %}
+      <span class="task-row__assignee">{{ fields.field_assignee.content }}</span>
+    {% else %}
+      <span class="task-row__assignee task-row__assignee--none">{{ 'Unassigned'|t }}</span>
+    {% endif %}
+    {% if fields.field_estimate.content %}
+      <span class="task-row__estimate">{{ fields.field_estimate.content }}{{ 'h'|t }}</span>
+    {% endif %}
+  </div>
+</article>

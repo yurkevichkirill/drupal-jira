@@ -1,0 +1,33 @@
+{
+  "name": "drupal-jira",
+  "version": "1.0.0",
+  "description": "Playwright end-to-end test suite for DrupalJira",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "test:seed": "node tests/e2e/fixtures/seed.mjs seed",
+    "test:cleanup": "node tests/e2e/fixtures/seed.mjs cleanup",
+    "db:seed": "npm run test:seed",
+    "db:cleanup": "npm run test:cleanup"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yurkevichkirill/drupal-jira.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yurkevichkirill/drupal-jira/issues"
+  },
+  "homepage": "https://github.com/yurkevichkirill/drupal-jira#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^20.19.43",
+    "dotenv": "^17.4.2",
+    "typescript": "^7.0.2"
+  }
+}

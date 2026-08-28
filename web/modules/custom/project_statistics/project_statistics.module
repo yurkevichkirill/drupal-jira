@@ -157,12 +157,10 @@ function _project_statistics_status_label(NodeInterface $task): string|Translata
     return t('No status');
   }
 
-  $allowed_values = (array) $task->get('field_status')
-    ->getFieldDefinition()
-    ->getFieldStorageDefinition()
-    ->getSetting('allowed_values');
+  $states = (array) \Drupal::config('workflows.workflow.task_status_workflow')
+    ->get('type_settings.states');
 
-  return $allowed_values[$value] ?? $value;
+  return $states[$value]['label'] ?? $value;
 }
 
 /**
@@ -172,14 +170,14 @@ function _project_statistics_status_label(NodeInterface $task): string|Translata
  *   The task the status is read from.
  *
  * @return string
- *   The stored value of field_status, or 'none' when the task has no status.
+ *   The moderation state, or 'none' when the task has no moderation state.
  */
 function _project_statistics_status_key(NodeInterface $task): string {
-  if (!$task->hasField('field_status') || $task->get('field_status')->isEmpty()) {
+  if (!$task->hasField('moderation_state') || $task->get('moderation_state')->isEmpty()) {
     return 'none';
   }
 
-  return (string) $task->get('field_status')->value;
+  return (string) $task->get('moderation_state')->value;
 }
 
 /**

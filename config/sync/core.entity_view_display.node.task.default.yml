@@ -8,10 +8,8 @@ dependencies:
     - field.field.node.task.field_body
     - field.field.node.task.field_estimate
     - field.field.node.task.field_project
-    - field.field.node.task.field_status
     - node.type.task
   module:
-    - options
     - project_statistics
     - text
     - user
@@ -20,6 +18,11 @@ targetEntityType: node
 bundle: task
 mode: default
 content:
+  content_moderation_control:
+    settings: {  }
+    third_party_settings: {  }
+    weight: -20
+    region: content
   field_assignee:
     type: entity_reference_label
     label: above
@@ -58,13 +61,6 @@ content:
       link: true
     third_party_settings: {  }
     weight: 102
-    region: content
-  field_status:
-    type: list_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 103
     region: content
   links:
     settings: {  }

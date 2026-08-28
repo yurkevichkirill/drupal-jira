@@ -3,9 +3,14 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.storage.node.field_assignee
+    - field.storage.node.field_estimate
+    - field.storage.node.field_project
     - node.type.task
   module:
+    - content_moderation
     - node
+    - options
     - user
 id: tasks
 label: Tasks
@@ -40,11 +45,72 @@ display:
           type: string
           settings:
             link_to_entity: true
+        field_project:
+          id: field_project
+          table: node__field_project
+          field: field_project
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            make_link: false
+          type: entity_reference_label
+          settings:
+            link: true
+        field_assignee:
+          id: field_assignee
+          table: node__field_assignee
+          field: field_assignee
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            make_link: false
+          type: entity_reference_label
+          settings:
+            link: false
+        field_estimate:
+          id: field_estimate
+          table: node__field_estimate
+          field: field_estimate
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: field
+          label: ''
+          exclude: false
+          alter:
+            alter_text: false
+            make_link: false
+          type: number_decimal
+          settings:
+            thousand_separator: ''
+            decimal_separator: .
+            scale: 2
+            prefix_suffix: true
       pager:
         type: some
         options:
           offset: 0
           items_per_page: 50
+      exposed_form:
+        type: basic
+        options:
+          submit_button: Apply
+          reset_button: true
+          reset_button_label: Reset
+          exposed_sorts_label: 'Sort by'
+          expose_sort_order: true
+          sort_asc_label: Asc
+          sort_desc_label: Desc
       access:
         type: perm
         options:
@@ -61,19 +127,104 @@ display:
           group_type: group
           plugin_id: text_custom
           empty: true
-          content: 'No content available.'
+          content: 'No tasks yet.'
       sorts:
+        changed:
+          id: changed
+          table: node_field_data
+          field: changed
+          relationship: none
+          group_type: group
+          entity_type: node
+          entity_field: changed
+          plugin_id: date
+          order: DESC
+          expose:
+            label: ''
+            field_identifier: ''
+          exposed: false
+          granularity: second
+      filters:
         title:
           id: title
           table: node_field_data
           field: title
           relationship: none
           group_type: group
+          admin_label: ''
           entity_type: node
           entity_field: title
-          plugin_id: standard
-          order: ASC
-      filters:
+          plugin_id: string
+          operator: contains
+          value: ''
+          group: 1
+          exposed: true
+          expose:
+            operator_id: title_op
+            label: 'Search tasks'
+            description: ''
+            use_operator: false
+            operator: title_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: title
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: 'Search tasks'
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
+        moderation_state:
+          id: moderation_state
+          table: node_field_revision
+          field: moderation_state
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: moderation_state_filter
+          operator: in
+          value: {  }
+          group: 1
+          exposed: true
+          expose:
+            operator_id: ''
+            label: Status
+            description: ''
+            use_operator: false
+            operator: moderation_state_op
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: moderation_state
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            reduce: false
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
         status:
           id: status
           table: node_field_data
@@ -104,12 +255,18 @@ display:
             operator_id: ''
             label: ''
       style:
-        type: html_list
+        type: default
         options:
-          type: ul
-          wrapper_class: item-list
+          grouping: {  }
+          row_class: ''
+          default_row_class: false
       row:
         type: fields
+        options:
+          default_field_elements: false
+          inline: {  }
+          separator: ''
+          hide_empty: false
       query:
         type: views_query
         options: {  }
@@ -119,9 +276,13 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.field_assignee'
+        - 'config:field.storage.node.field_estimate'
+        - 'config:field.storage.node.field_project'
   page_1:
     id: page_1
     display_title: Page
@@ -135,6 +296,10 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - url
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.field_assignee'
+        - 'config:field.storage.node.field_estimate'
+        - 'config:field.storage.node.field_project'

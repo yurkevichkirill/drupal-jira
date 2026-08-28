@@ -38,7 +38,7 @@ process:
     bundle_key: type
     bundle: project
     ignore_case: true
-  field_status:
+  moderation_state:
     plugin: static_map
     source: status
     map:

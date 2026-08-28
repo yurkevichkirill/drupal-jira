@@ -121,6 +121,15 @@
   margin: 0;
 }
 
+/* Overrides base.css's generic .form-actions (margin-top: 20px, its own
+   gap): that spacing is meant for a form's actions row sitting below its
+   fields, not for the Apply button's wrapper sitting inline next to the
+   search field here. */
+.task-board__search .form-actions {
+  margin: 0;
+  gap: 0;
+}
+
 /* Hidden from view only: display:none would also drop the label from the
    accessibility tree, leaving the search field with no accessible name. */
 .task-board__search label {
@@ -150,7 +159,6 @@
   color: var(--tb-color-secondary-600);
 }
 
-.task-board__search .form-actions,
 .task-board__search .form-submit {
   padding: var(--tb-space-8) var(--tb-space-16);
   border: none;

@@ -1,0 +1,50 @@
+{#
+/**
+ * @file
+ * Task list page (the `tasks` view), styled to match the Kanban board
+ * (task-board.css tokens/pills) rather than core's bare views markup.
+ *
+ * @see views-view-fields--tasks.html.twig
+ * @see template_preprocess_views_view()
+ */
+#}
+{{ attach_library('drupal_jira/entity_list') }}
+{%
+  set classes = [
+    'entity-list',
+    dom_id ? 'js-view-dom-id-' ~ dom_id,
+  ]
+%}
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+
+  {% if header %}
+    <header>{{ header }}</header>
+  {% endif %}
+
+  <div class="entity-list__toolbar">
+    {{ exposed }}
+  </div>
+
+  {{ attachment_before }}
+
+  {% if rows -%}
+    <div class="task-list">
+      {{ rows }}
+    </div>
+  {% elseif empty -%}
+    <p class="entity-list__empty">{{ empty }}</p>
+  {% endif %}
+
+  <div class="entity-list__pager">{{ pager }}</div>
+
+  {{ attachment_after }}
+  {{ more }}
+
+  {% if footer %}
+    <footer>{{ footer }}</footer>
+  {% endif %}
+
+  {{ feed_icons }}
+</div>
