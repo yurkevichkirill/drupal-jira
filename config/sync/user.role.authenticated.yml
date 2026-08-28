@@ -2,8 +2,13 @@ uuid: 6a7d6258-1d93-4c09-ad2f-aea8a9c91769
 langcode: en
 status: true
 dependencies:
+  config:
+    - node.type.task
+    - workflows.workflow.task_status_workflow
   module:
+    - content_moderation
     - media
+    - node
     - system
     - time_tracking
 _core:
@@ -14,5 +19,11 @@ weight: 1
 is_admin: false
 permissions:
   - 'access content'
+  - 'create task content'
   - 'create time_log'
+  - 'edit any task content'
+  - 'use task_status_workflow transition create_new_backlog'
+  - 'use task_status_workflow transition reopen'
+  - 'use task_status_workflow transition start_progress'
+  - 'use task_status_workflow transition submit_review'
   - 'view media'

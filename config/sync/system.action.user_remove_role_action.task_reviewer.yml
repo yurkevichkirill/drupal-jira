@@ -1,0 +1,14 @@
+uuid: 6b04f600-22b9-45a4-af15-2b599f542262
+langcode: en
+status: true
+dependencies:
+  config:
+    - user.role.task_reviewer
+  module:
+    - user
+id: user_remove_role_action.task_reviewer
+label: 'Remove the Task Reviewer role from the selected user(s)'
+type: user
+plugin: user_remove_role_action
+configuration:
+  rid: task_reviewer

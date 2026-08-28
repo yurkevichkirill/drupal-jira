@@ -1,0 +1,8 @@
+name: Update tasks projects
+type: module
+description: 'Batch data migration setting default Project Type and initial Content Moderation state on legacy nodes.'
+package: Custom
+core_version_requirement: ^11
+dependencies:
+  - drupal:content_moderation
+  - drupal:node

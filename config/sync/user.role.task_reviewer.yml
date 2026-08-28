@@ -1,0 +1,17 @@
+uuid: 379efaa0-4eb5-433c-b59d-209725933147
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.task
+    - workflows.workflow.task_status_workflow
+  module:
+    - content_moderation
+    - node
+id: task_reviewer
+label: 'Task Reviewer'
+weight: 2
+is_admin: false
+permissions:
+  - 'edit any task content'
+  - 'use task_status_workflow transition approve'

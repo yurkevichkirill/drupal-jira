@@ -1,0 +1,5 @@
+project.project_sprints_tab:
+  route_name: project.project_sprints_tab
+  title: 'Sprints'
+  base_route: entity.node.canonical
+  weight: 10
