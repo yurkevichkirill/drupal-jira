@@ -48,7 +48,7 @@ The app is a Jira-like tracker built entirely from core entities + config (insta
 Two node types:
 
 - **Project** (`node.type.project`) — `field_body`.
-- **Task** (`node.type.task`) — `field_body`, `field_project` (required entity reference → Project), `field_assignee` (entity reference → user), `field_status` (list_string: `backlog`, `in_progress`, `review`, `done`; defaults to `backlog`), `field_estimate` (decimal 10,2), `field_attachments` (entity reference → media, bundles `image` + `document`, edited via the media library widget).
+- **Task** (`node.type.task`) — `field_body`, `field_project` (required entity reference → Project), `field_assignee` (entity reference → user), a Content Moderation workflow (`backlog`, `in_progress`, `review`, `done`; defaults to `backlog`), `field_estimate` (decimal 10,2), `field_attachments` (entity reference → media, bundles `image` + `document`, edited via the media library widget).
 
 Media types `image` (`field_media_image`) and `document` (`field_media_file`) back attachments.
 

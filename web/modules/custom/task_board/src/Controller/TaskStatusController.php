@@ -23,11 +23,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 final class TaskStatusController extends ControllerBase {
 
   /**
-   * The name of the field the board columns are built from.
-   */
-  private const STATUS_FIELD = 'field_status';
-
-  /**
    * The time service.
    *
    * @var \Drupal\Component\Datetime\TimeInterface
@@ -87,16 +82,12 @@ final class TaskStatusController extends ControllerBase {
    *   The stored node id and status.
    */
   public function update(NodeInterface $node, Request $request): JsonResponse {
-    if ($node->bundle() !== 'task' || !$node->hasField(self::STATUS_FIELD)) {
+    if ($node->bundle() !== 'task' || !$node->hasField('moderation_state')) {
       throw new BadRequestHttpException('Only task nodes can be moved on the board.');
     }
 
     $payload = json_decode((string) $request->getContent(), TRUE);
     $status = is_array($payload) && isset($payload['status']) ? (string) $payload['status'] : '';
-    if (!in_array($status, $this->allowedStatuses($node), TRUE)) {
-      throw new BadRequestHttpException('Unknown task status.');
-    }
-
     // Column placement mirrors the moderation state of the task, so a card
     // can only be dropped where the current user is allowed to move the
     // workflow: 'node.update' access alone is too coarse, since roles here
@@ -106,10 +97,7 @@ final class TaskStatusController extends ControllerBase {
       throw new AccessDeniedHttpException('You are not allowed to move this task to that status.');
     }
 
-    if ($node->hasField('moderation_state')) {
-      $node->set('moderation_state', $status);
-    }
-    $node->set(self::STATUS_FIELD, $status);
+    $node->set('moderation_state', $status);
     $node->setNewRevision(TRUE);
     $node->setRevisionUserId((int) $this->currentUser()->id());
     $node->setRevisionCreationTime($this->time->getRequestTime());
@@ -181,26 +169,6 @@ final class TaskStatusController extends ControllerBase {
     }
 
     return FALSE;
-  }
-
-  /**
-   * Returns the status values the field accepts.
-   *
-   * @param \Drupal\node\NodeInterface $node
-   *   The task the status field is read from.
-   *
-   * @return string[]
-   *   The allowed machine values, in the order they are configured.
-   */
-  private function allowedStatuses(NodeInterface $node): array {
-    // The setting is stored as a list of value/label pairs but is handed back
-    // as a flat machine name => label map.
-    $allowed_values = $node->get(self::STATUS_FIELD)
-      ->getFieldDefinition()
-      ->getFieldStorageDefinition()
-      ->getSetting('allowed_values');
-
-    return array_map('strval', array_keys((array) $allowed_values));
   }
 
 }

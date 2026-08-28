@@ -85,7 +85,7 @@ final class TaskStatService {
    * @return array
    *   An associative array with the following keys:
    *   - total_tasks: (int) The number of tasks in the project.
-   *   - done_tasks: (int) The number of tasks whose field_status is 'done'.
+   *   - done_tasks: (int) The number of tasks in the 'done' moderation state.
    *   - total_estimate: (float) The sum of field_estimate over all tasks.
    *   - total_logged: (float) The sum of the hours logged against all tasks.
    *   - remaining: (float) What is left of the estimate of the project. A
@@ -110,7 +110,7 @@ final class TaskStatService {
       $total_estimate += $estimate;
       $total_logged += $logged;
 
-      if ($task->get('field_status')->value === 'done') {
+      if ($task->hasField('moderation_state') && $task->get('moderation_state')->value === 'done') {
         $done_tasks++;
       }
 

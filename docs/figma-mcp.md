@@ -41,13 +41,13 @@ Figma MCP server.
 | Dashboard shell & navigation | `Navbar` (`9:1835`): logo, Your work/Projects/Filters/Dashboards/Teams/Plans/Apps, Create button, trial banner, search, bell/help/settings, avatar. `Sidebar` (`9:2004`): Projects panel, recent project, "View all projects". | Not implemented. `drupal_jira` theme has no page/navbar/sidebar template — only the two views templates and the paragraph preprocess hooks. Drupal's own admin toolbar is the only chrome present. | Biggest gap: there's no themed shell to map onto; would need new template(s)/regions if this is ever built. |
 | Page title & project actions | `Header` (`9:2686`): project icon + project name, "Project settings" button. `Toolbar` (`9:2684`): Summary / **Board** / List / Calendar / Timeline / Approvals / Forms / Pages / Attachments tabs. | `views-view--task-board.html.twig` only prints the View's static `{{ title }}` ("Task board"). No project entity (name/icon) is rendered, no settings action, no view-mode tabs. | The `board/%` argument (`field_project_target_id`) already resolves a Project node server-side — the twig template just never surfaces it. |
 | Search / filter controls | Board header: "Search board" input, assignee avatar facepile, Share / Filter / **Group by: Status** / More buttons. | View has `exposed_form: basic` configured but no fields are actually exposed (`filters` only has fixed `status`/`type`). No search box, no facepile, no Filter/Share/More controls render. | Grouping by status is already the fixed behavior (via the style plugin), just not user-toggleable. |
-| Status columns | `TO DO` / `CONCEPTING` / `DESIGN` columns, each a pill title + numeric count + `+ Create` affordance. | `board_columns` built in `drupal_jira_preprocess_views_view()` from `field_status` allowed values (`backlog`, `in_progress`, `review`, `done`), rendered as `.task-board__column` with `.task-board__column-title` + `.task-board__count`. | Structural match is solid (fixed columns even when empty, live count). Two intentional differences: Drupal keeps its real domain status labels rather than the demo's TO DO/CONCEPTING/DESIGN, and there's no per-column "+ Create" button in the current markup. |
+| Status columns | `TO DO` / `CONCEPTING` / `DESIGN` columns, each a pill title + numeric count + `+ Create` affordance. | `board_columns` built in `drupal_jira_preprocess_views_view()` from the task workflow states (`backlog`, `in_progress`, `review`, `done`), rendered as `.task-board__column` with `.task-board__column-title` + `.task-board__count`. | Structural match is solid (fixed columns even when empty, live count). Two intentional differences: Drupal keeps its real domain status labels rather than the demo's TO DO/CONCEPTING/DESIGN, and there's no per-column "+ Create" button in the current markup. |
 | Task cards & live fields | `Kanban Card` (`10:1106`): colored status pill, numeric id, title, small "Create" meta line, drag icon. | `node--task--teaser.html.twig`: draggable `<article data-nid>`, title → AJAX modal (task Full view mode), body from a `task_card` variable populated elsewhere (`project_statistics_preprocess_node()`, not this theme) — CSS (`.task-card__meta--mine`, `.task-card__mine-badge`, `.task-card__initials`, `.task-card__list/item`) implies it surfaces `field_assignee` (with a "mine" highlight + initials), and likely `field_estimate`. | Card-level status pill and any "id"/estimate badge from Figma aren't reproduced — status is only conveyed by column placement in Drupal. |
 | Colors / typography / spacing / borders / icons | CSS vars from the design: `--primary/1000 #0a65e4`, `--primary/200 #cee0fa`, `--secondary/700…1000` (`#5b5772`→`#140f36`), `--grey-scale/50…900` (`#f5f5f5`→`#202020`), page bg `--sky-blue/200 #f2faff`; font **Outfit** (Regular/Medium/SemiBold, 12–20px); radius tokens 4/5/6/8/50px; gap/padding tokens 6/8/10/12/14/16/20/30/40px; 1–2px strokes; SVG icon set (search, bell, settings, board/list/calendar/timeline, etc). | `task-board.css` uses ad-hoc hex values (`#d3d8de`, `#f3f4f7`, `#4a90d9`, `#6b7280`, `#1d4ed8`, `#e5e7eb`) with no shared token layer, and the default system font stack — `Outfit` isn't loaded. No icon set; the board relies on plain text/emoji-free labels. | Adopting the design would mean introducing a token layer (CSS custom properties or a Sass map) and loading the `Outfit` webfont — neither exists in the theme today. |
 
 ## Intentional differences (if implementing this design)
 
-- Keep Drupal's real `field_status` allowed values (backlog/in_progress/
+- Keep Drupal's real task workflow states (backlog/in_progress/
   review/done) instead of the demo's TO DO/CONCEPTING/DESIGN labels — the
   column labels are config-driven domain data, not copy to hardcode.
 - No navbar/sidebar/project-header chrome exists yet; scope for that is
@@ -84,23 +84,23 @@ though not styling (still the theme's default exposed-form markup).
 
 1. **Access control bypass on Content Moderation transitions (found by
    manual review, not the AI pass).** `TaskStatusController::update()` wrote
-   `field_status` directly and only checked generic `node.update` access.
+   the task status directly and only checked generic `node.update` access.
    But `workflows.workflow.task_status_workflow.yml` gates each state change
    behind a named transition permission (e.g. `task_reviewer` alone holds
    `use task_status_workflow transition approve`, the only path from
    `review` to `done`), and the controller never set `moderation_state` at
-   all — silently desyncing it from `field_status` on every drag. Any
+   all — silently failing to update the moderation state on every drag. Any
    authenticated user (all of whom hold generic `edit any task content`)
    could drag a card straight to Done, bypassing the review gate entirely.
    **Fixed**: the controller now resolves valid transitions for the current
    user via the core `content_moderation.state_transition_validation`
    service (`StateTransitionValidation::getValidTransitions()`), rejects the
    request with 403 when the target state isn't one of them, and — only once
-   permitted — writes `moderation_state` alongside `field_status`. Verified
+   permitted — writes `moderation_state`. Verified
    live: a plain authenticated user got `403` moving a task from `review` to
    `done`; granting `task_reviewer` and stepping through the real transition
    chain (`in_progress` → `review` → `done`) returned `200` at each step, and
-   `field_status`/`moderation_state` were confirmed equal in the database
+   `moderation_state` was confirmed in the database
    afterwards. This is server-side and un-bypassable by hiding UI — exactly
    per the "access control must remain server-side" requirement.
 2. **Status pill on the moved card used the wrong CSS class after a drop**
@@ -198,7 +198,7 @@ though not styling (still the theme's default exposed-form markup).
   is new UI surface beyond a "fix what's broken" review, and a keyboard user
   already has a working path today: the task's own edit form (reachable via
   the card's title link, which is a normal focusable, keyboard-activatable
-  `<a>`) can change `field_status`/`moderation_state` under the same
+  `<a>`) can change `moderation_state` under the same
   transition permissions enforced above. Flagging as a follow-up rather than
   silently accepting the limitation.
 - **View filtering, route/entity access, workflow permissions.** The
@@ -219,7 +219,7 @@ though not styling (still the theme's default exposed-form markup).
 - Live HTTP verification (via `curl` against the running `ddev` site with
   real session cookies, admin and non-privileged users) of: the AJAX status
   endpoint's JSON shape, the 403/200 transition-permission behavior above,
-  `field_status`/`moderation_state` staying in sync after a save, and that
+  `moderation_state` being updated after a save, and that
   the fixed JS (`findRow`, `refreshEmptyState`, `refreshCardStatus`,
   `modifierClass`) is actually present in the aggregated asset Drupal serves
   (not a stale cache) — since no browser tool was available to click through

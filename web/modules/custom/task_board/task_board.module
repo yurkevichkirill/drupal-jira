@@ -2,53 +2,7 @@
 
 /**
  * @file
- * Hook implementations for the Task board module.
+ * Task board module hooks.
  */
 
 declare(strict_types=1);
-
-use Drupal\node\NodeInterface;
-use Drupal\views\ViewExecutable;
-
-/**
- * Implements hook_views_pre_render().
- */
-function task_board_views_pre_render(ViewExecutable $view): void {
-  if ($view->id() !== 'task_board') {
-    return;
-  }
-
-  // Cards assigned to the person looking at the board are marked as their own,
-  // so the board reads differently for every user. Roles are not enough here:
-  // two teammates with the same roles still see a different set of cards
-  // highlighted.
-  // @see project_statistics_preprocess_drupaljira_task_card()
-  $view->element['#cache']['contexts'][] = 'user';
-}
-
-/**
- * Implements hook_ENTITY_TYPE_presave() for node entities.
- *
- * The board column a task appears in comes from field_status, but whether a
- * drag-and-drop move between columns is allowed is checked against the
- * task_status_workflow moderation state (@see TaskStatusController). The two
- * are only kept in lockstep by that controller: a task edited through the
- * ordinary node form (whose field_status widget has no relation to
- * moderation_state at all) can end up with a field_status that says "review"
- * while moderation_state still says "in_progress", silently blocking every
- * future drag-and-drop move because no transition exists from the state the
- * task is actually stuck in. Forcing moderation_state to mirror field_status
- * on every save, regardless of how the task was edited, makes that
- * divergence impossible instead of relying on callers to remember.
- */
-function task_board_node_presave(NodeInterface $node): void {
-  if ($node->bundle() !== 'task' || !$node->hasField('field_status') || !$node->hasField('moderation_state')) {
-    return;
-  }
-
-  if ($node->get('field_status')->isEmpty()) {
-    return;
-  }
-
-  $node->set('moderation_state', $node->get('field_status')->value);
-}

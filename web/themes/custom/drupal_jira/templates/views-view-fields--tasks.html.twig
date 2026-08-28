@@ -10,7 +10,7 @@
  * @see template_preprocess_views_view_fields()
  */
 #}
-{% set status_value = row._entity.field_status.value %}
+{% set status_value = row._entity.moderation_state.value %}
 <article class="task-row">
   <div class="task-row__main">
     <h3 class="task-row__title">{{ fields.title.content }}</h3>
@@ -19,8 +19,8 @@
     {% endif %}
   </div>
   <div class="task-row__meta">
-    {% if fields.field_status.content %}
-      <span class="status-pill status-pill--{{ status_value|clean_class }}">{{ fields.field_status.content }}</span>
+    {% if fields.moderation_state.content %}
+      <span class="status-pill status-pill--{{ status_value|clean_class }}">{{ fields.moderation_state.content }}</span>
     {% endif %}
     {% if fields.field_assignee.content %}
       <span class="task-row__assignee">{{ fields.field_assignee.content }}</span>

@@ -83,7 +83,7 @@ test.describe('Task board and workflow transitions', () => {
     await page.goto('/node/add/task');
     await page.getByLabel('Title', { exact: true }).fill(title);
     await pickAutocompleteSuggestion(page, page.getByLabel('Project', { exact: true }), project.title);
-    await page.getByLabel('Status', { exact: true }).selectOption('review');
+    await page.getByLabel('Moderation state', { exact: true }).selectOption('review');
     await page.getByRole('button', { name: 'Save' }).first().click();
     await expect(page).toHaveURL(/\/node\/\d+$/);
     const nid = Number(new URL(page.url()).pathname.split('/').pop());

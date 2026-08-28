@@ -8,9 +8,10 @@ dependencies:
     - field.field.node.task.field_body
     - field.field.node.task.field_estimate
     - field.field.node.task.field_project
-    - field.field.node.task.field_status
     - node.type.task
+    - workflows.workflow.task_status_workflow
   module:
+    - content_moderation
     - media_library
     - project_statistics
     - text
@@ -66,9 +67,9 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
-  field_status:
-    type: options_select
-    weight: 123
+  moderation_state:
+    type: moderation_state_default
+    weight: 100
     region: content
     settings: {  }
     third_party_settings: {  }

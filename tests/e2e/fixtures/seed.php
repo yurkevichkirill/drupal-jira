@@ -109,7 +109,7 @@ function e2e_seed_content(string $prefix): void {
     'title' => $prefix . ' Task',
     'field_body' => ['value' => 'Seeded task body.', 'format' => 'basic_html'],
     'field_project' => ['target_id' => $project->id()],
-    'field_status' => 'backlog',
+    'moderation_state' => 'backlog',
     'field_estimate' => '2.50',
     'status' => 1,
   ]);

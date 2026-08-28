@@ -6,9 +6,9 @@ dependencies:
     - field.storage.node.field_assignee
     - field.storage.node.field_estimate
     - field.storage.node.field_project
-    - field.storage.node.field_status
     - node.type.task
   module:
+    - content_moderation
     - node
     - options
     - user
@@ -61,21 +61,6 @@ display:
           type: entity_reference_label
           settings:
             link: true
-        field_status:
-          id: field_status
-          table: node__field_status
-          field: field_status
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: field
-          label: ''
-          exclude: false
-          alter:
-            alter_text: false
-            make_link: false
-          type: list_default
-          settings: {  }
         field_assignee:
           id: field_assignee
           table: node__field_assignee
@@ -108,7 +93,7 @@ display:
           type: number_decimal
           settings:
             thousand_separator: ''
-            decimal_separator: '.'
+            decimal_separator: .
             scale: 2
             prefix_suffix: true
       pager:
@@ -201,15 +186,15 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        field_status_value:
-          id: field_status_value
-          table: node__field_status
-          field: field_status_value
+        moderation_state:
+          id: moderation_state
+          table: node_field_revision
+          field: moderation_state
           relationship: none
           group_type: group
           admin_label: ''
-          plugin_id: list_field
-          operator: or
+          plugin_id: moderation_state_filter
+          operator: in
           value: {  }
           group: 1
           exposed: true
@@ -218,10 +203,10 @@ display:
             label: Status
             description: ''
             use_operator: false
-            operator: field_status_value_op
+            operator: moderation_state_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: status
+            identifier: moderation_state
             required: false
             remember: false
             multiple: false
@@ -294,7 +279,10 @@ display:
         - url
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.field_assignee'
+        - 'config:field.storage.node.field_estimate'
+        - 'config:field.storage.node.field_project'
   page_1:
     id: page_1
     display_title: Page
@@ -311,4 +299,7 @@ display:
         - url
         - 'user.node_grants:view'
         - user.permissions
-      tags: {  }
+      tags:
+        - 'config:field.storage.node.field_assignee'
+        - 'config:field.storage.node.field_estimate'
+        - 'config:field.storage.node.field_project'

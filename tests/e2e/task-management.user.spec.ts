@@ -22,9 +22,8 @@ test.describe('Task creation and editing', () => {
     await pickAutocompleteSuggestion(page, page.getByLabel('Project', { exact: true }), project.title);
     await expect(page.getByLabel('Project', { exact: true })).toHaveValue(new RegExp(`^${project.title} \\(\\d+\\)$`));
 
-    // field.field.node.task.field_status.yml defaults to 'backlog'; leave it
-    // untouched so this is a real assertion about the default.
-    await expect(page.getByLabel('Status', { exact: true })).toHaveValue('backlog');
+    // The task workflow defaults to the Backlog moderation state.
+    await expect(page.getByLabel('Moderation state', { exact: true })).toHaveValue('backlog');
 
     await pickAutocompleteSuggestion(page, page.getByLabel('Assignee', { exact: true }), 'admin');
     await page.getByLabel('Hours', { exact: true }).fill('3');
