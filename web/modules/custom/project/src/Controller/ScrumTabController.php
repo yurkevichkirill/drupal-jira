@@ -21,4 +21,11 @@ final class ScrumTabController extends ControllerBase {
     ];
   }
 
+  /**
+   * Keeps the project's own title on the Sprints tab instead of "Sprints".
+   */
+  public function title(NodeInterface $node): string {
+    return $node->label();
+  }
+
 }

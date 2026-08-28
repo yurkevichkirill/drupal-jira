@@ -20,6 +20,14 @@ task_board:
     - core/drupal.dialog.ajax
     - drupal_jira/task_board_font
 
+entity_list:
+  version: 1.x
+  css:
+    theme:
+      css/entity-list.css: {}
+  dependencies:
+    - drupal_jira/task_board_font
+
 # Pinned Google Fonts stylesheet for the 'Outfit' typeface used throughout
 # the Project Dashboard design (see docs/figma-mcp.md). Loaded as its own
 # library, attached only where task_board depends on it, rather than an

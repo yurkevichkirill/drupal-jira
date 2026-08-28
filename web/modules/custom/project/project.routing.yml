@@ -2,7 +2,7 @@ project.project_sprints_tab:
   path: '/node/{node}/sprints'
   defaults:
     _controller: '\Drupal\project\Controller\ScrumTabController::view'
-    _title: 'Sprints'
+    _title_callback: '\Drupal\project\Controller\ScrumTabController::title'
   requirements:
     _custom_access: '\Drupal\project\Access\ScrumTabAccessCheck::access'
   options:

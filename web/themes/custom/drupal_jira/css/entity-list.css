@@ -1,0 +1,330 @@
+/**
+ * @file
+ * /tasks and /projects list pages.
+ *
+ * Reuses the same color/spacing/radius scale as the Kanban board
+ * (task-board.css) so these pages read as the same product, but keeps its
+ * own copy of the tokens scoped under .entity-list: task-board.css's --tb-*
+ * custom properties are declared on .task-board itself, and these pages
+ * never nest inside that element.
+ */
+
+.entity-list {
+  --el-color-primary: #0a65e4;
+  --el-color-primary-tint: #cee0fa;
+  --el-color-secondary-600: #726f86;
+  --el-color-secondary-700: #5b5772;
+  --el-color-secondary-800: #433f5e;
+  --el-color-secondary-900: #2c274a;
+  --el-color-secondary-1000: #140f36;
+  --el-color-grey-50: #f5f5f5;
+  --el-color-grey-100: #ececec;
+  --el-color-grey-200: #d8d8d8;
+  --el-color-grey-600: #7e7e7e;
+  --el-color-grey-800: #3f3f3f;
+  --el-color-grey-900: #202020;
+  --el-color-success: #039855;
+  --el-color-white: #ffffff;
+
+  --el-font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --el-radius-5: 5px;
+  --el-radius-6: 6px;
+  --el-radius-8: 8px;
+  --el-radius-pill: 50px;
+
+  --el-space-4: 4px;
+  --el-space-8: 8px;
+  --el-space-12: 12px;
+  --el-space-16: 16px;
+  --el-space-20: 20px;
+
+  display: block;
+  font-family: var(--el-font-family);
+  padding: var(--el-space-20) 0;
+}
+
+/* Toolbar: exposed filter form + primary action link, same pattern as
+   .task-board__actions on the Kanban board. */
+.entity-list__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--el-space-16);
+  margin-bottom: var(--el-space-20);
+  flex-wrap: wrap;
+}
+
+.entity-list__toolbar .views-exposed-form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--el-space-12);
+  flex-wrap: wrap;
+}
+
+.entity-list__toolbar .views-exposed-form .form-item {
+  margin: 0;
+}
+
+.entity-list__toolbar .views-exposed-form label {
+  font-size: 12px;
+  color: var(--el-color-grey-600);
+}
+
+.entity-list__toolbar .views-exposed-form input[type='text'],
+.entity-list__toolbar .views-exposed-form select {
+  min-width: 200px;
+  padding: var(--el-space-8) var(--el-space-16);
+  border: 1px solid var(--el-color-grey-200);
+  border-radius: var(--el-radius-5);
+  font-family: var(--el-font-family);
+  font-size: 14px;
+  color: var(--el-color-secondary-900);
+}
+
+.entity-list__toolbar .form-submit {
+  padding: var(--el-space-8) var(--el-space-16);
+  border: none;
+  border-radius: var(--el-radius-5);
+  background: var(--el-color-primary);
+  color: var(--el-color-white);
+  font-family: var(--el-font-family);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.entity-list__toolbar .form-submit:hover,
+.entity-list__toolbar .form-submit:focus {
+  background: #084fb3;
+}
+
+/* The reset button shares every class with Apply (both render as
+   <input class="button js-form-submit form-submit">), so it can only be
+   targeted by its id — kept as a plain text link rather than a second
+   solid-color button next to Apply. */
+.entity-list__toolbar #edit-reset {
+  background: transparent;
+  color: var(--el-color-secondary-700);
+  text-decoration: underline;
+}
+
+.entity-list__toolbar #edit-reset:hover,
+.entity-list__toolbar #edit-reset:focus {
+  color: var(--el-color-primary);
+  background: transparent;
+}
+
+.entity-list__new {
+  padding: var(--el-space-8) var(--el-space-20);
+  border-radius: var(--el-radius-5);
+  background: var(--el-color-primary);
+  color: var(--el-color-white);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.entity-list__new:hover,
+.entity-list__new:focus {
+  background: #084fb3;
+}
+
+.entity-list__empty {
+  padding: var(--el-space-20);
+  text-align: center;
+  color: var(--el-color-grey-600);
+  background: var(--el-color-grey-50);
+  border-radius: var(--el-radius-8);
+}
+
+.entity-list__pager nav {
+  margin-top: var(--el-space-20);
+}
+
+/* Status pill: same palette as the board's column pills / task card badges
+   (task-board.css .task-board__column-pill), duplicated here rather than
+   shared because it depends on --el-* rather than --tb-*. */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--el-space-8);
+  border-radius: var(--el-radius-5);
+  background: #d0cfd7;
+  color: var(--el-color-secondary-800);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-pill--in-progress {
+  background: #e2f6ff;
+  color: var(--el-color-primary);
+}
+
+.status-pill--review {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.status-pill--done {
+  background: #dcfce7;
+  color: var(--el-color-success);
+}
+
+/* Task list: one row per task. */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--el-space-8);
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--el-space-16);
+  padding: var(--el-space-12) var(--el-space-16);
+  border: 1px solid var(--el-color-grey-200);
+  border-radius: var(--el-radius-8);
+  background: var(--el-color-white);
+  flex-wrap: wrap;
+}
+
+.task-row:hover {
+  border-color: var(--el-color-primary);
+}
+
+.task-row__main {
+  min-width: 0;
+}
+
+.task-row__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.task-row__title a {
+  color: var(--el-color-secondary-1000);
+  text-decoration: none;
+}
+
+.task-row__title a:hover,
+.task-row__title a:focus {
+  text-decoration: underline;
+}
+
+.task-row__project {
+  font-size: 12px;
+  color: var(--el-color-grey-600);
+}
+
+.task-row__project a {
+  color: var(--el-color-secondary-700);
+  text-decoration: none;
+}
+
+.task-row__project a:hover,
+.task-row__project a:focus {
+  text-decoration: underline;
+}
+
+.task-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--el-space-12);
+  flex-wrap: wrap;
+}
+
+.task-row__assignee {
+  font-size: 13px;
+  color: var(--el-color-secondary-700);
+}
+
+.task-row__assignee--none {
+  color: var(--el-color-grey-600);
+  font-style: italic;
+}
+
+.task-row__estimate {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--el-color-secondary-700);
+}
+
+/* Project grid: one card per project. */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--el-space-16);
+}
+
+.project-card {
+  display: flex;
+  gap: var(--el-space-12);
+  padding: var(--el-space-16);
+  border: 1px solid var(--el-color-grey-200);
+  border-radius: var(--el-radius-8);
+  background: var(--el-color-white);
+  box-shadow: 0 1px 4.5px rgba(0, 0, 0, 0.09);
+}
+
+.project-card:hover {
+  border-color: var(--el-color-primary);
+}
+
+.project-card__icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--el-radius-6);
+  background: #6054bb;
+  color: var(--el-color-white);
+  font-weight: 600;
+}
+
+.project-card__body {
+  min-width: 0;
+}
+
+.project-card__title {
+  margin: 0 0 var(--el-space-4);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.project-card__title a {
+  color: var(--el-color-secondary-1000);
+  text-decoration: none;
+}
+
+.project-card__title a:hover,
+.project-card__title a:focus {
+  text-decoration: underline;
+}
+
+.project-card__excerpt {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--el-color-secondary-700);
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  .task-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .entity-list__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
